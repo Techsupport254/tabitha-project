@@ -1,0 +1,15 @@
+{
+  "id": "ce495c8904b2777a0d9d33ee42fecfd8",
+  "timestamp": "2025-06-04T10:30:58.975954",
+  "update": {
+    "type": "prescription",
+    "data": {
+      "action": "new",
+      "patient_id": "22ee0caf-98b8-44a5-b06c-aa4c74d3f629",
+      "prescription_id": "7c29e284-47ba-416f-a99c-a1a2bd8ea75f",
+      "medication": "Leflunomide",
+      "quantity": 10
+    },
+    "timestamp": "2025-06-04T10:30:58.974995"
+  }
+}

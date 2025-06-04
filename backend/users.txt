@@ -1,0 +1,35 @@
+User Information:
+==================================================
+
+User 1:
+Name: Test Patient
+Email: patient@test.com
+Role: patient
+Date of Birth: 1990-01-01
+Age: 34
+------------------------------
+
+User 2:
+Name: System Administrator
+Email: admin@newchem.com
+Role: administrator
+Date of Birth: 1980-01-01
+Age: 44
+------------------------------
+
+User 3:
+Name: Test Doctor
+Email: doctor@test.com
+Role: doctor
+Date of Birth: 1985-01-01
+Age: 39
+------------------------------
+
+User 4:
+Name: Test Pharmacist
+Email: pharmacist@test.com
+Role: pharmacist
+Date of Birth: 1988-01-01
+Age: 36
+------------------------------
+

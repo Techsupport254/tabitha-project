@@ -1,0 +1,12 @@
+{
+  "id": "4fe06d11dafab57e23d71113a6bf2925",
+  "timestamp": "2025-06-03T18:03:44.377740",
+  "update": {
+    "type": "patient_data",
+    "data": {
+      "action": "new_record",
+      "patient_id": "alice.johnson@example.com"
+    },
+    "timestamp": "2025-06-03T18:03:44.375323"
+  }
+}

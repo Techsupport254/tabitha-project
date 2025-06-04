@@ -1,0 +1,15 @@
+{
+  "id": "b4661a7c02e377d6591fd0c41ec87587",
+  "timestamp": "2025-06-04T11:01:16.549766",
+  "update": {
+    "type": "prescription",
+    "data": {
+      "action": "new",
+      "patient_id": "22ee0caf-98b8-44a5-b06c-aa4c74d3f629",
+      "prescription_id": "92514764-ca19-4cae-871d-98642e6971e6",
+      "medication": "Oseltamivir Phosphate",
+      "quantity": 10
+    },
+    "timestamp": "2025-06-04T11:01:16.549434"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "6849d58a6b4ca5933216dd0dbfcfb5f3",
+  "timestamp": "2025-06-03T18:04:48.565973",
+  "update": {
+    "type": "patient_data",
+    "data": {
+      "action": "new_record",
+      "patient_id": "bob.smith@example.com"
+    },
+    "timestamp": "2025-06-03T18:04:48.563602"
+  }
+}

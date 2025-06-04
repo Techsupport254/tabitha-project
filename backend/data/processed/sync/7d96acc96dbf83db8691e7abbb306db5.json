@@ -1,0 +1,15 @@
+{
+  "id": "7d96acc96dbf83db8691e7abbb306db5",
+  "timestamp": "2025-06-04T11:01:16.546564",
+  "update": {
+    "type": "prescription",
+    "data": {
+      "action": "new",
+      "patient_id": "22ee0caf-98b8-44a5-b06c-aa4c74d3f629",
+      "prescription_id": "86b5706f-39d6-4c32-ac10-4f6e33ba684e",
+      "medication": "Fludrocortisone Acetate",
+      "quantity": 10
+    },
+    "timestamp": "2025-06-04T11:01:16.546220"
+  }
+}

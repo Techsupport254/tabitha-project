@@ -1,0 +1,12 @@
+{
+  "id": "42919d4474966abbbc5bc0b5f3336667",
+  "timestamp": "2025-06-04T08:05:02.847134",
+  "update": {
+    "type": "patient_data",
+    "data": {
+      "action": "new_record",
+      "patient_id": "6179b50a-6cf1-4864-8f2f-f2c316a9236c"
+    },
+    "timestamp": "2025-06-04T08:05:02.846960"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "f46cd0478463bb5c69b6a6c80cb838aa",
+  "timestamp": "2025-06-04T13:07:34.254172",
+  "update": {
+    "type": "prescription",
+    "data": {
+      "action": "new",
+      "patient_id": "cea50ff9-5fa8-4019-bb93-984731592032",
+      "prescription_id": "f1546443-7c1d-4213-be8e-a96f814d57ab",
+      "medication": "Allopurinol",
+      "quantity": 10
+    },
+    "timestamp": "2025-06-04T13:07:34.253810"
+  }
+}
