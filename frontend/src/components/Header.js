@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
 	FaUser,
 	FaShoppingCart,
@@ -19,6 +19,7 @@ import {
 	FaCashRegister,
 	FaUserShield,
 	FaCaretDown,
+	FaFileAlt,
 } from "react-icons/fa";
 import api from "../utils/api"; // Import the centralized API utility
 
@@ -28,6 +29,8 @@ const Header = () => {
 	const [showNotifications, setShowNotifications] = useState(false);
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isForbidden, setIsForbidden] = useState(false);
+	const navigate = useNavigate();
 	const dropdownRef = useRef(null);
 	const notificationsRef = useRef(null);
 	const mobileMenuRef = useRef(null);
@@ -36,13 +39,22 @@ const Header = () => {
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
-				const response = await api.get("/api/user"); // Assuming a backend endpoint like /api/user exists
+				const response = await api.get("/api/user");
 				if (response.data) {
 					setUser(response.data);
+					setIsForbidden(false);
 				}
 			} catch (error) {
 				console.error("Failed to fetch user data:", error);
-				setUser(null); // User is not logged in or session invalid
+				if (error.response && error.response.status === 403) {
+					setIsForbidden(true);
+					setUser(null);
+					// Optionally redirect to a forbidden page or show a message
+					// navigate('/forbidden');
+				} else {
+					setUser(null);
+					setIsForbidden(false);
+				}
 			} finally {
 				setIsLoading(false);
 			}
@@ -74,13 +86,16 @@ const Header = () => {
 
 	const handleLogout = async () => {
 		try {
-			await api.post("/api/logout"); // Call backend logout endpoint
+			await api.post("/api/logout");
+			api.clearUserCache(); // Clear user cache on logout
+			setUser(null);
+			window.location.href = "/";
+			window.location.reload();
 		} catch (error) {
 			console.error("Logout failed:", error);
-		} finally {
-			setUser(null); // Clear local user state
-			window.location.href = "/"; // Redirect to home page
-			window.location.reload(); // Reload the page
+			api.clearUserCache(); // Clear cache even if logout fails
+			window.location.href = "/";
+			window.location.reload();
 		}
 	};
 
@@ -111,7 +126,7 @@ const Header = () => {
 	};
 
 	// Role-based access control
-	const isAdmin = user?.role === "administrator";
+	const isAdmin = user?.role === "admin" || user?.role === "administrator";
 	const isDoctor = user?.role === "doctor";
 	const isPharmacist = user?.role === "pharmacist";
 	const isCashier = user?.role === "cashier";
@@ -122,6 +137,12 @@ const Header = () => {
 	const getNavigationItems = () => {
 		const items = [
 			{
+				to: "/dashboard",
+				label: "Dashboard",
+				icon: <FaChartLine className="w-4 h-4 mr-2" />,
+				show: isAdmin || isPharmacist,
+			},
+			{
 				to: "/symptom-ai",
 				label: "Symptom AI",
 				icon: <FaUserMd className="w-4 h-4 mr-2" />,
@@ -131,7 +152,7 @@ const Header = () => {
 				to: "/patient-records",
 				label: "Patient Records",
 				icon: <FaUser className="w-4 h-4 mr-2" />,
-				show: isAdmin || isDoctor || isPharmacist || isPatient,
+				show: isAdmin || isPatient,
 			},
 			{
 				to: "/prescription-management",
@@ -151,10 +172,27 @@ const Header = () => {
 				icon: <FaChartLine className="w-4 h-4 mr-2" />,
 				show: isAdmin || isPharmacist,
 			},
+			{
+				to: "/staff-management",
+				label: "Staff",
+				icon: <FaUserNurse className="w-4 h-4 mr-2" />,
+				show: isAdmin,
+			},
+			{
+				to: "/sales-management",
+				label: "Sales",
+				icon: <FaCashRegister className="w-4 h-4 mr-2" />,
+				show: isAdmin || isCashier,
+			},
 		];
 
 		return items.filter((item) => item.show);
 	};
+
+	// If forbidden, don't render the header
+	if (isForbidden) {
+		return null;
+	}
 
 	return (
 		<header className="bg-white shadow-sm sticky top-0 z-50">
@@ -262,15 +300,13 @@ const Header = () => {
 											<FaUser className="w-4 h-4 mr-3" />
 											Profile
 										</Link>
-										{(isAdmin || isPharmacist) && (
-											<Link
-												to="/dashboard"
-												className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-											>
-												<FaChartLine className="w-4 h-4 mr-3" />
-												Dashboard
-											</Link>
-										)}
+										<Link
+											to="/dashboard"
+											className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+										>
+											<FaChartLine className="w-4 h-4 mr-3" />
+											Dashboard
+										</Link>
 										<Link
 											to="/settings"
 											className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -279,13 +315,29 @@ const Header = () => {
 											Settings
 										</Link>
 										{isAdmin && (
-											<Link
-												to="/admin"
-												className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-											>
-												<FaUserShield className="w-4 h-4 mr-3" />
-												Admin Panel
-											</Link>
+											<>
+												<Link
+													to="/admin"
+													className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+												>
+													<FaUserShield className="w-4 h-4 mr-3" />
+													Admin Panel
+												</Link>
+												<Link
+													to="/system-settings"
+													className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+												>
+													<FaCog className="w-4 h-4 mr-3" />
+													System Settings
+												</Link>
+												<Link
+													to="/audit-logs"
+													className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+												>
+													<FaFileAlt className="w-4 h-4 mr-3" />
+													Audit Logs
+												</Link>
+											</>
 										)}
 										<button
 											onClick={handleLogout}

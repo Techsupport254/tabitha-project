@@ -1,0 +1,15 @@
+{
+  "id": "587d545dc72225c535c6dd88e86295db",
+  "timestamp": "2025-06-04T15:32:19.658573",
+  "update": {
+    "type": "prescription",
+    "data": {
+      "action": "new",
+      "patient_id": "f02bb37b-fab1-4e44-89a5-8b4a9e2231aa",
+      "prescription_id": "d87ae0c7-7685-4e57-a807-01c4c59b7b60",
+      "medication": "Carvedilol",
+      "quantity": 10
+    },
+    "timestamp": "2025-06-04T15:32:19.658209"
+  }
+}

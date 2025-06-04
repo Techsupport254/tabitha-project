@@ -45,10 +45,31 @@ const SymptomAI = () => {
 		try {
 			console.log("Sending symptoms for analysis:", symptoms);
 			const response = await api.post("/api/symptoms", {
-				description: symptoms.trim(), // Changed from 'symptoms' to 'description' to match backend expectation
+				description: symptoms.trim(),
 			});
 
-			console.log("Analysis response:", response.data);
+			console.log("Raw analysis response:", response);
+			console.log("Analysis response data:", response.data);
+
+			// Ensure we have the expected data structure
+			if (!response.data || typeof response.data !== "object") {
+				throw new Error("Invalid response format from server");
+			}
+
+			// Validate the response structure
+			if (!Array.isArray(response.data.symptoms)) {
+				console.error("Symptoms array missing or invalid:", response.data);
+				throw new Error("Invalid symptoms data in response");
+			}
+
+			if (!Array.isArray(response.data.recommendations)) {
+				console.error(
+					"Recommendations array missing or invalid:",
+					response.data
+				);
+				throw new Error("Invalid recommendations data in response");
+			}
+
 			setResult(response.data);
 		} catch (error) {
 			console.error("Analysis error:", error);
@@ -58,6 +79,7 @@ const SymptomAI = () => {
 			} else {
 				setError(
 					error.response?.data?.error ||
+						error.message ||
 						"Failed to analyze symptoms. Please try again."
 				);
 			}
@@ -250,113 +272,101 @@ const SymptomAI = () => {
 											Analysis Results
 										</h2>
 										<div className="space-y-4">
-											<div>
-												<h3 className="text-sm font-medium text-blue-700">
-													Identified Symptoms
-												</h3>
-												<ul className="mt-2 list-disc list-inside text-sm text-blue-600">
-													{result.symptoms.map((symptom, index) => (
-														<li key={index}>{symptom}</li>
-													))}
-												</ul>
-											</div>
+											{result.symptoms && result.symptoms.length > 0 && (
+												<div>
+													<h3 className="text-sm font-medium text-blue-700">
+														Identified Symptoms
+													</h3>
+													<ul className="mt-2 list-disc list-inside text-sm text-blue-600">
+														{result.symptoms.map((symptom, index) => (
+															<li key={index}>{symptom}</li>
+														))}
+													</ul>
+												</div>
+											)}
 
-											<div>
-												<h3 className="text-sm font-medium text-blue-700">
-													Possible Conditions
-												</h3>
-												<div className="space-y-4">
-													{result.recommendations.map((rec, index) => (
-														<div
-															key={index}
-															className="bg-white rounded-lg p-4 shadow-sm"
-														>
-															<div className="flex justify-between items-start">
-																<h4 className="text-sm font-medium text-gray-900">
-																	{rec.disease}
-																</h4>
-																<span className="text-xs text-gray-500">
-																	{Math.round(rec.confidence * 100)}% confidence
-																</span>
-															</div>
+											{result.recommendations &&
+												result.recommendations.length > 0 && (
+													<div>
+														<h3 className="text-sm font-medium text-blue-700">
+															Possible Conditions
+														</h3>
 
-															{rec.medications.length > 0 ? (
+														{/* Display main prediction */}
+														{result.predictions &&
+															result.predictions.length > 0 && (
 																<div className="mt-2">
-																	<h5 className="text-xs font-medium text-gray-700 mb-1">
-																		Recommended Medications:
-																	</h5>
-																	<ul className="space-y-2">
-																		{rec.medications.map((med, medIndex) => (
-																			<li
-																				key={medIndex}
-																				className="text-sm text-gray-600"
-																			>
+																	<h4 className="text-sm font-medium text-gray-900">
+																		Main Prediction:{" "}
+																		{result.predictions[0].disease} (
+																		{Math.round(
+																			result.predictions[0].confidence * 100
+																		)}
+																		% confidence)
+																	</h4>
+																</div>
+															)}
+
+														{/* Display detailed recommendations */}
+														<div className="space-y-4 mt-4">
+															{result.recommendations.map((rec, index) => (
+																<div
+																	key={index}
+																	className="bg-white rounded-lg p-4 shadow-sm"
+																>
+																	<div className="flex justify-between items-start">
+																		<h4 className="text-sm font-medium text-gray-900">
+																			{rec.disease}
+																		</h4>
+																		<span className="text-xs text-gray-500">
+																			{Math.round(rec.confidence * 100)}%
+																			confidence
+																		</span>
+																	</div>
+
+																	{rec.medication && (
+																		<div className="mt-2">
+																			<h5 className="text-xs font-medium text-gray-700 mb-1">
+																				Recommended Medication:
+																			</h5>
+																			<div className="text-sm text-gray-600">
 																				<div className="font-medium">
-																					{med.name}
+																					{rec.medication}
 																				</div>
-																				{med.dosage && (
+																				{rec.dosage && (
 																					<div className="text-xs text-gray-500 mt-1">
 																						<span className="font-medium">
 																							Dosage:
-																						</span>
-																						{/* Extract and display a concise dosage summary */}
-																						{med.name ===
-																							"Oseltamivir Phosphate" &&
-																						med.dosage.includes(
-																							"75 mg twice daily for 5 days"
-																						)
-																							? "75 mg twice daily for 5 days (Adult Treatment)"
-																							: med.name === "Leflunomide" &&
-																							  med.dosage.includes(
-																									"20 mg once daily"
-																							  )
-																							? "20 mg once daily (Maintenance)"
-																							: med.name === "Allopurinol" &&
-																							  med.dosage.includes(
-																									"100 mg orally daily"
-																							  )
-																							? "Initial: 100 mg daily"
-																							: med.name ===
-																									"Fludrocortisone Acetate" &&
-																							  med.dosage.includes(
-																									"0.1 mg of fludrocortisone acetate tablets daily"
-																							  )
-																							? "0.1 mg daily (Usual Dose)"
-																							: "See full details below"}
+																						</span>{" "}
+																						{rec.dosage.length > 150
+																							? `${rec.dosage.substring(
+																									0,
+																									150
+																							  )}...`
+																							: rec.dosage}
 																					</div>
 																				)}
-																				{med.instructions && (
+																				{rec.instructions && (
 																					<div
 																						className="text-xs text-gray-500 mt-1 cursor-pointer hover:underline"
 																						onClick={() =>
-																							setModalContent(med.instructions)
+																							setModalContent(rec.instructions)
 																						}
 																					>
 																						<span className="font-medium">
 																							Instructions:
-																						</span>
-																						{/* Display a concise instruction summary */}
-																						{med.instructions.split(". ")[0] +
-																							(med.instructions.split(". ")
-																								.length > 1
-																								? "..."
-																								: "")}
+																						</span>{" "}
+																						Click to view full instructions
 																					</div>
 																				)}
-																			</li>
-																		))}
-																	</ul>
+																			</div>
+																		</div>
+																	)}
 																</div>
-															) : (
-																<p className="text-sm text-gray-500 mt-2">
-																	{rec.message ||
-																		"No specific medication recommendations available. Please consult a healthcare professional."}
-																</p>
-															)}
+															))}
 														</div>
-													))}
-												</div>
-											</div>
+													</div>
+												)}
 
 											<div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
 												<p className="text-sm text-yellow-700">

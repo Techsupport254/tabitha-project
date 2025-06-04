@@ -1,0 +1,15 @@
+{
+  "id": "9cf81dbde8173ea24a1f02d55405f817",
+  "timestamp": "2025-06-04T15:32:19.668656",
+  "update": {
+    "type": "prescription",
+    "data": {
+      "action": "new",
+      "patient_id": "f02bb37b-fab1-4e44-89a5-8b4a9e2231aa",
+      "prescription_id": "abc6973f-406b-4a13-8ec0-a8808eea2e60",
+      "medication": "ENTRESTO",
+      "quantity": 10
+    },
+    "timestamp": "2025-06-04T15:32:19.661334"
+  }
+}

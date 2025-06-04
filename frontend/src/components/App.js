@@ -33,6 +33,7 @@ import Contact from "../pages/Contact";
 import Cart from "../pages/Cart";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
+import UserManagement from "../pages/UserManagement";
 
 // Custom hook for authentication
 const useAuth = () => {
@@ -103,8 +104,8 @@ const AdminGuard = ({ children }) => {
 		return <Navigate to="/login" replace />;
 	}
 
-	if (user.role !== "administrator") {
-		// If user is not an administrator, redirect to home page
+	if (user.role !== "admin" && user.role !== "administrator") {
+		// If user is not an admin or administrator, redirect to home page
 		return <Navigate to="/" replace />;
 	}
 
@@ -178,6 +179,14 @@ const App = () => {
 						element={
 							<AdminGuard>
 								<AdminPanel />
+							</AdminGuard>
+						}
+					/>
+					<Route
+						path="/user-management"
+						element={
+							<AdminGuard>
+								<UserManagement />
 							</AdminGuard>
 						}
 					/>

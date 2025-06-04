@@ -2,11 +2,11 @@ import json
 from pathlib import Path
 from datetime import datetime
 import uuid
+from app import DatabaseManager
 
 def create_test_users():
-    # Get the data directory
-    data_dir = Path("data/processed/patients")
-    data_dir.mkdir(parents=True, exist_ok=True)
+    # Initialize database manager
+    db_manager = DatabaseManager()
     
     # Test users data
     test_users = [
@@ -15,7 +15,7 @@ def create_test_users():
             'email': 'patient@test.com',
             'role': 'patient',
             'dob': '1990-01-01',
-            'age': 34,
+            'gender': 'male',
             'password': 'User@123'
         },
         {
@@ -23,7 +23,7 @@ def create_test_users():
             'email': 'doctor@test.com',
             'role': 'doctor',
             'dob': '1985-01-01',
-            'age': 39,
+            'gender': 'male',
             'password': 'User@123'
         },
         {
@@ -31,15 +31,15 @@ def create_test_users():
             'email': 'pharmacist@test.com',
             'role': 'pharmacist',
             'dob': '1988-01-01',
-            'age': 36,
+            'gender': 'female',
             'password': 'User@123'
         },
         {
             'name': 'System Administrator',
             'email': 'admin@newchem.com',
-            'role': 'administrator',
+            'role': 'admin',
             'dob': '1980-01-01',
-            'age': 44,
+            'gender': 'male',
             'password': 'User@123'
         }
     ]
@@ -47,23 +47,23 @@ def create_test_users():
     # Create user records
     for user in test_users:
         user_id = str(uuid.uuid4())
-        record = {
-            'patient_id': user_id,
-            'personal_info': user,
-            'medical_history': {},
-            'prescriptions': [],
-            'allergies': [],
-            'conditions': [],
-            'created_at': datetime.now().isoformat(),
-            'updated_at': datetime.now().isoformat()
-        }
+        success = db_manager.create_user(
+            user_id=user_id,
+            email=user['email'],
+            password=user['password'],
+            name=user['name'],
+            role=user['role'],
+            dob=user['dob'],
+            gender=user['gender']
+        )
         
-        # Save to file
-        file_path = data_dir / f"{user_id}.json"
-        with open(file_path, 'w') as f:
-            json.dump(record, f, indent=2)
-            
-        print(f"Created {user['role']} user: {user['email']}")
+        if success:
+            print(f"Created {user['role']} user: {user['email']}")
+        else:
+            print(f"Failed to create {user['role']} user: {user['email']}")
+    
+    # Close database connection
+    db_manager.close()
 
 if __name__ == "__main__":
     create_test_users() 

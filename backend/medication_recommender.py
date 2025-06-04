@@ -157,6 +157,14 @@ class MedicationRecommender:
             # Filter medications for relevance
             relevant_meds = [med for med in medications 
                            if self._is_relevant_medication(med, disease)]
+            
+            # Ensure each medication has the required fields
+            for med in relevant_meds:
+                if 'brand_name' not in med and 'name' in med:
+                    med['brand_name'] = med['name']
+                if 'generic_name' not in med:
+                    med['generic_name'] = med.get('brand_name', med.get('name', 'Unknown'))
+            
             all_medications.extend(relevant_meds)
 
         # Sort medications by relevance (those with more complete information first)
@@ -165,6 +173,7 @@ class MedicationRecommender:
             if med.get('dosage'): score += 2
             if med.get('instructions'): score += 2
             if med.get('generic_name'): score += 1
+            if med.get('brand_name'): score += 1
             return score
 
         sorted_medications = sorted(all_medications, key=med_score, reverse=True)
