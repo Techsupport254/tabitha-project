@@ -14,6 +14,7 @@ import {
 	Dropdown,
 	Menu,
 	message,
+	Divider,
 } from "antd";
 import {
 	SearchOutlined,
@@ -45,6 +46,12 @@ const PrescriptionManagement = () => {
 	const [editedMedications, setEditedMedications] = useState([]);
 	const [editedNotes, setEditedNotes] = useState("");
 
+	// State variables for dispense modal
+	const [showDispenseModal, setShowDispenseModal] = useState(false);
+	const [dispensingPrescription, setDispensingPrescription] = useState(null);
+	const [dispenseQuantity, setDispenseQuantity] = useState(0);
+	const [dispensePrice, setDispensePrice] = useState(0);
+
 	// Fetch user role and ID on component mount
 	useEffect(() => {
 		let isMounted = true;
@@ -70,7 +77,7 @@ const PrescriptionManagement = () => {
 		return () => {
 			isMounted = false;
 		};
-	}, []); // Remove navigate from dependencies since it's stable
+	}, [navigate]);
 
 	// Add a helper function for safe date formatting
 	const formatDateSafely = (dateString) => {
@@ -420,15 +427,15 @@ const PrescriptionManagement = () => {
 	const getStatusColor = (status) => {
 		switch (status.toLowerCase()) {
 			case "approved":
-				return "bg-green-100 text-green-800";
+				return "success"; // Use Ant Design status colors
 			case "pending":
-				return "bg-yellow-100 text-yellow-800";
+				return "warning";
 			case "completed":
-				return "bg-blue-100 text-blue-800";
+				return "processing";
 			case "rejected":
-				return "bg-red-100 text-red-800";
+				return "error";
 			default:
-				return "bg-gray-100 text-gray-800";
+				return "default";
 		}
 	};
 
@@ -438,7 +445,8 @@ const PrescriptionManagement = () => {
 			prescription.patientName?.toLowerCase().includes(searchLower) ||
 			prescription.medications?.some((med) =>
 				med.name.toLowerCase().includes(searchLower)
-			)
+			) ||
+			prescription.status?.toLowerCase().includes(searchLower)
 		);
 	});
 
@@ -495,21 +503,7 @@ const PrescriptionManagement = () => {
 			key: "status",
 			render: (status, record) => (
 				<div>
-					<Tag
-						color={
-							status.toLowerCase() === "approved"
-								? "success"
-								: status.toLowerCase() === "pending"
-								? "warning"
-								: status.toLowerCase() === "completed"
-								? "processing"
-								: status.toLowerCase() === "rejected"
-								? "error"
-								: "default"
-						}
-					>
-						{status}
-					</Tag>
+					<Tag color={getStatusColor(status)}>{status}</Tag>
 					{status.toLowerCase() === "completed" && record.dispensed_at && (
 						<div className="text-xs text-gray-500 mt-1">
 							Dispensed: {formatDateSafely(record.dispensed_at)}
@@ -525,7 +519,7 @@ const PrescriptionManagement = () => {
 				const menu = (
 					<Menu>
 						<Menu.Item key="view" onClick={() => handleViewDetails(record)}>
-							<EyeOutlined /> View
+							<EyeOutlined /> View Details
 						</Menu.Item>
 						{userRole === "doctor" && record.status === "pending" && (
 							<Menu.Item
@@ -553,13 +547,15 @@ const PrescriptionManagement = () => {
 								key="delete"
 								danger
 								onClick={() => {
-									if (
-										window.confirm(
-											"Are you sure you want to delete this prescription?"
-										)
-									) {
-										console.log("Delete prescription:", record.id);
-									}
+									Modal.confirm({
+										title: "Confirm Delete",
+										content:
+											"Are you sure you want to delete this prescription?",
+										onOk() {
+											console.log("Delete prescription:", record.id);
+											// Call delete function here
+										},
+									});
 								}}
 							>
 								<DeleteOutlined /> Delete
@@ -568,7 +564,7 @@ const PrescriptionManagement = () => {
 						{userRole === "pharmacist" && record.status === "approved" && (
 							<Menu.Item
 								key="dispense"
-								onClick={() => handleDispensePrescription(record.id)}
+								onClick={() => handleDispenseClick(record)}
 							>
 								<MedicineBoxOutlined /> Dispense
 							</Menu.Item>
@@ -588,8 +584,26 @@ const PrescriptionManagement = () => {
 		},
 	];
 
+	// Function to handle the click of the Dispense button
+	const handleDispenseClick = (prescription) => {
+		setDispensingPrescription(prescription);
+		// Initialize quantity and price from prescription data if available, or set defaults
+		setDispenseQuantity(prescription.quantity > 0 ? prescription.quantity : 0);
+		// Assuming price is available in prescription object
+		setDispensePrice(prescription.price > 0 ? prescription.price : 0);
+		setShowDispenseModal(true);
+	};
+
 	// Function to handle dispensing a prescription (for pharmacists)
-	const handleDispensePrescription = async (prescriptionId) => {
+	const confirmDispense = async () => {
+		if (!dispensingPrescription) return;
+
+		// Basic validation
+		if (dispenseQuantity <= 0 || dispensePrice <= 0) {
+			message.error("Please enter valid quantity and price.");
+			return;
+		}
+
 		try {
 			setLoading(true);
 			setError(null); // Clear previous errors
@@ -598,10 +612,18 @@ const PrescriptionManagement = () => {
 				key: "dispense",
 			});
 
-			await api.patch(`/api/prescriptions/${prescriptionId}`, {
-				status: "completed",
-				notes: "Dispensed by pharmacist",
+			const prescriptionId = dispensingPrescription.id;
+			await api.post(`/api/prescriptions/${prescriptionId}/dispense`, {
+				quantity: dispenseQuantity,
+				price: dispensePrice,
+				notes: `Dispensed with quantity ${dispenseQuantity} and price ${dispensePrice}.`, // Optional: add notes about dispensed quantity/price
 			});
+
+			// Close the modal
+			setShowDispenseModal(false);
+			setDispensingPrescription(null);
+			setDispenseQuantity(0);
+			setDispensePrice(0);
 
 			// Refresh the prescriptions list immediately
 			await fetchPrescriptions();
@@ -623,20 +645,17 @@ const PrescriptionManagement = () => {
 				duration: 5,
 			});
 			setError(errorMsg);
-			// Scroll to top and focus error for accessibility
-			setTimeout(() => {
-				const errorDiv = document.querySelector(
-					".ant-message-error, .ant-message-notice-error, .ant-message-custom-content-error"
-				);
-				if (errorDiv) {
-					errorDiv.scrollIntoView({ behavior: "smooth", block: "center" });
-					errorDiv.setAttribute("tabindex", "-1");
-					errorDiv.focus();
-				}
-			}, 100);
 		} finally {
 			setLoading(false);
 		}
+	};
+
+	const handleCancelDispense = () => {
+		setShowDispenseModal(false);
+		setDispensingPrescription(null);
+		setDispenseQuantity(0);
+		setDispensePrice(0);
+		setError(null);
 	};
 
 	return (
@@ -833,107 +852,6 @@ const PrescriptionManagement = () => {
 								</div>
 							</div>
 						)}
-
-						{userRole === "pharmacist" &&
-							selectedPrescription.status === "pending" && (
-								<div className="mt-6">
-									<h4 className="text-base font-medium mb-4">
-										Approve Prescription
-									</h4>
-									<div className="space-y-4">
-										{selectedPrescription.medications.map(
-											(medication, index) => (
-												<div
-													key={index}
-													className="border border-gray-200 rounded-lg p-4"
-												>
-													<h5 className="font-medium mb-3">
-														{medication.name}
-													</h5>
-													<div className="grid grid-cols-2 gap-4">
-														<div>
-															<label className="block text-sm text-gray-700">
-																Dosage
-															</label>
-															<input
-																type="text"
-																defaultValue={medication.dosage}
-																className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-															/>
-														</div>
-														<div>
-															<label className="block text-sm text-gray-700">
-																Frequency
-															</label>
-															<input
-																type="text"
-																defaultValue={medication.frequency}
-																className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-															/>
-														</div>
-														<div>
-															<label className="block text-sm text-gray-700">
-																Duration
-															</label>
-															<input
-																type="text"
-																defaultValue={medication.duration}
-																className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-															/>
-														</div>
-														<div>
-															<label className="block text-sm text-gray-700">
-																Quantity
-															</label>
-															<input
-																type="number"
-																defaultValue={medication.quantity}
-																className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-															/>
-														</div>
-													</div>
-												</div>
-											)
-										)}
-										<Button
-											type="primary"
-											className="w-full"
-											onClick={() => {
-												const modifications = {
-													medications: selectedPrescription.medications.map(
-														(med, index) => ({
-															name: med.name,
-															dosage:
-																document.querySelectorAll('input[type="text"]')[
-																	index * 3
-																].value,
-															frequency:
-																document.querySelectorAll('input[type="text"]')[
-																	index * 3 + 1
-																].value,
-															duration:
-																document.querySelectorAll('input[type="text"]')[
-																	index * 3 + 2
-																].value,
-															quantity: parseInt(
-																document.querySelectorAll(
-																	'input[type="number"]'
-																)[index].value
-															),
-														})
-													),
-												};
-												handleApprovePrescription(
-													selectedPrescription.id,
-													modifications
-												);
-											}}
-										>
-											Approve Prescription
-										</Button>
-									</div>
-								</div>
-							)}
 					</div>
 				)}
 			</Modal>
@@ -1101,6 +1019,78 @@ const PrescriptionManagement = () => {
 						</Form.Item>
 					</Form>
 				)}
+			</Modal>
+
+			{/* Dispense Prescription Modal */}
+			<Modal
+				title="Dispense Prescription"
+				open={
+					showDispenseModal &&
+					dispensingPrescription &&
+					dispensingPrescription.status !== "completed"
+				}
+				onCancel={handleCancelDispense}
+				footer={[
+					<Button key="cancel" onClick={handleCancelDispense}>
+						Cancel
+					</Button>,
+					<Button
+						key="dispense"
+						type="primary"
+						onClick={confirmDispense}
+						loading={loading}
+					>
+						Confirm Dispense
+					</Button>,
+				]}
+			>
+				{dispensingPrescription &&
+					dispensingPrescription.status !== "completed" && (
+						<Form layout="vertical">
+							<p>
+								Dispensing:{" "}
+								<strong>
+									{dispensingPrescription.medications[0]?.name || "N/A"}
+								</strong>{" "}
+								for patient{" "}
+								<strong>{dispensingPrescription.patientName}</strong>
+							</p>
+							<Divider />
+							<Form.Item
+								label="Quantity"
+								name="quantity"
+								initialValue={dispenseQuantity}
+								rules={[{ required: true, message: "Please enter quantity" }]}
+							>
+								<InputNumber
+									min={1}
+									className="w-full"
+									onChange={(value) => setDispenseQuantity(value || 0)}
+									placeholder="Enter quantity to dispense"
+								/>
+							</Form.Item>
+							<Form.Item
+								label="Price (KES)"
+								name="price"
+								initialValue={dispensePrice}
+								rules={[
+									{ required: true, message: "Please enter price in KES" },
+								]}
+							>
+								<InputNumber
+									min={0}
+									step={0.01}
+									className="w-full"
+									onChange={(value) => setDispensePrice(value || 0)}
+									formatter={(value) =>
+										`KES ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+									}
+									parser={(value) => value.replace(/KES\s?|(,*)/g, "")}
+									placeholder="Enter price in KES"
+								/>
+							</Form.Item>
+						</Form>
+					)}
 			</Modal>
 		</div>
 	);

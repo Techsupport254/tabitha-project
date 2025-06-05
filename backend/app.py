@@ -146,6 +146,21 @@ class DatabaseManager:
         self._user_cache = {}  # Cache for user data
         self._cache_ttl = 300  # Cache TTL in seconds (5 minutes)
         self._initialize_pool()
+        # Test the connection immediately after initialization
+        self._test_initial_connection()
+
+    def _test_initial_connection(self):
+        """Test the initial connection to ensure it's working."""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.close()
+            conn.close()
+            logger.info("Initial database connection test successful")
+        except Error as e:
+            logger.error(f"Initial database connection test failed: {e}")
+            raise
 
     def _initialize_pool(self):
         """Initialize the connection pool."""
@@ -181,25 +196,15 @@ class DatabaseManager:
             self._pool = None
             raise
 
-    def _test_connection(self, conn):
-        """Test if a connection is still valid."""
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT 1")
-            cursor.close()
-            return True
-        except Error:
-            return False
-
     def _get_connection(self):
         """Get a connection from the pool with periodic testing and proper cleanup."""
-        conn = None
-        try:
+        if not self._pool:
+            logger.warning("Connection pool not available. Reinitializing...")
+            self._initialize_pool()
             if not self._pool:
-                logger.info("Connection pool not available. Reinitializing...")
-                self._initialize_pool()
-            
-            # Get connection from pool with timeout
+                raise Error("Failed to initialize database connection pool")
+        
+        try:
             conn = self._pool.get_connection()
             
             # Test connection periodically
@@ -217,11 +222,6 @@ class DatabaseManager:
             
             return conn
         except Error as e:
-            if conn:
-                try:
-                    conn.close()
-                except:
-                    pass
             logger.error(f"Error getting database connection: {e}")
             # If pool is exhausted, try to reinitialize
             if "pool exhausted" in str(e).lower():
@@ -234,27 +234,38 @@ class DatabaseManager:
                     raise
             raise
 
-    def execute_query(self, query, params=None, fetch=True, dictionary=True):
-        """Execute a query with proper connection handling."""
-        conn = None
+    def execute_query(self, query: str, params: tuple = None, fetch: bool = True) -> Optional[List[Dict]]:
+        """Execute a database query with proper connection handling."""
+        if not self._pool:
+            logger.warning("No database connection pool available. Attempting to initialize...")
+            self._initialize_pool()
+            if not self._pool:
+                raise Error("Failed to initialize database connection pool")
+
         cursor = None
+        conn = None
         try:
             conn = self._get_connection()
-            cursor = conn.cursor(dictionary=dictionary, buffered=True)
-            cursor.execute(query, params or ())
+            cursor = conn.cursor(dictionary=True)
             
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+                
             if fetch:
                 result = cursor.fetchall()
+                return result
             else:
                 conn.commit()
-                result = cursor.rowcount
+                return None
                 
-            return result
         except Error as e:
+            logger.error(f"Error executing query: {e}")
             if conn:
                 try:
                     conn.rollback()
-                except:
+                except Error:
                     pass
             raise
         finally:
@@ -403,6 +414,16 @@ class DatabaseManager:
                 except:
                     pass
 
+    def _test_connection(self, conn):
+        """Test if a connection is still valid."""
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.close()
+            return True
+        except Error:
+            return False
+
 # Initialize Flask app
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')  # Use environment variable or fallback
@@ -435,10 +456,70 @@ db_manager = None
 
 def initialize_system():
     """Initialize the system components."""
-    global prescription_system, db_manager
+    global prescription_system, db_manager, cart_manager, purchase_manager
     try:
         db_manager = DatabaseManager()
         prescription_system = PrescriptionSystem(db_manager=db_manager, data_dir="data/processed")  # Pass db_manager to PrescriptionSystem
+        
+        # Initialize cart tables
+        try:
+            # Check if tables exist first
+            tables_exist = db_manager.execute_query("""
+                SELECT COUNT(*) as count 
+                FROM information_schema.tables 
+                WHERE table_schema = %s 
+                AND table_name IN ('cart_items', 'purchases', 'purchase_items')
+            """, (os.getenv('MYSQL_DATABASE_DB', 'tabitha'),))
+            
+            if not tables_exist or tables_exist[0]['count'] < 3:
+                # Create cart tables if they don't exist
+                db_manager.execute_query("""
+                    CREATE TABLE IF NOT EXISTS cart_items (
+                        id VARCHAR(36) PRIMARY KEY,
+                        user_id VARCHAR(36) NOT NULL,
+                        prescription_id VARCHAR(36) NOT NULL,
+                        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                        FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE
+                    )
+                """, fetch=False)
+
+                db_manager.execute_query("""
+                    CREATE TABLE IF NOT EXISTS purchases (
+                        id VARCHAR(36) PRIMARY KEY,
+                        user_id VARCHAR(36) NOT NULL,
+                        total_amount DECIMAL(10,2) NOT NULL,
+                        status ENUM('pending', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        completed_at TIMESTAMP NULL DEFAULT NULL,
+                        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                    )
+                """, fetch=False)
+
+                db_manager.execute_query("""
+                    CREATE TABLE IF NOT EXISTS purchase_items (
+                        id VARCHAR(36) PRIMARY KEY,
+                        purchase_id VARCHAR(36) NOT NULL,
+                        prescription_id VARCHAR(36) NOT NULL,
+                        quantity INT NOT NULL,
+                        price DECIMAL(10,2) NOT NULL,
+                        FOREIGN KEY (purchase_id) REFERENCES purchases(id) ON DELETE CASCADE,
+                        FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE
+                    )
+                """, fetch=False)
+                logger.info("Cart tables created successfully")
+            else:
+                logger.info("Cart tables already exist, skipping creation")
+
+            # Initialize managers after tables are created/verified
+            cart_manager = CartManager(db_manager)
+            purchase_manager = PurchaseManager(db_manager)
+            
+        except Exception as e:
+            logger.error(f"Error initializing cart tables: {e}")
+            # Don't raise the exception here, just log it and continue
+            # The tables might already exist and be usable
+            
         logger.info("System initialized successfully")
     except Exception as e:
         logger.error(f"Error initializing system: {e}")
@@ -1347,70 +1428,61 @@ def update_prescription_endpoint(prescription_id):
         updates = {}
         for field, value in data.items():
             if field in allowed_fields:
-                # Basic type validation
-                if allowed_fields[field] == int:
-                    try:
-                        updates[field] = int(value)
-                    except (ValueError, TypeError):
-                        logger.warning(f"update_prescription_endpoint: Invalid type for {field}. Expected int, got {type(value).__name__}")
-                        return jsonify({'error': f'Invalid type for {field}. Expected integer.'}), 400
-                elif allowed_fields[field] == str:
+                if allowed_fields[field] == str:
                     if not isinstance(value, str):
                         logger.warning(f"update_prescription_endpoint: Invalid type for {field}. Expected str, got {type(value).__name__}")
                         return jsonify({'error': f'Invalid type for {field}. Expected string.'}), 400
                     updates[field] = value
+                    # If status is being set to completed, also set dispensed_at
+                    if field == 'status' and value.lower() == 'completed':
+                        updates['dispensed_at'] = datetime.now()
             elif field == 'medications':
-                # Handle updates to medication details
-                if not isinstance(value, list):
-                    logger.warning("update_prescription_endpoint: medications must be an array")
-                    return jsonify({'error': 'medications must be an array'}), 400
-                    
-                if len(value) == 0:
-                    logger.warning("update_prescription_endpoint: medications array cannot be empty")
-                    return jsonify({'error': 'medications array cannot be empty'}), 400
-                    
-                # Process each medication in the array
-                for med in value:
-                    if not isinstance(med, dict):
-                        logger.warning("update_prescription_endpoint: each medication must be an object")
-                        return jsonify({'error': 'each medication must be an object'}), 400
-                        
-                    # Extract and validate medication fields
-                    if 'dosage' in med:
-                        if not isinstance(med['dosage'], str):
-                            logger.warning("update_prescription_endpoint: medication dosage must be a string")
-                            return jsonify({'error': 'medication dosage must be a string'}), 400
-                        updates['dosage'] = med['dosage']
-                        
-                    if 'frequency' in med:
-                        if not isinstance(med['frequency'], str):
-                            logger.warning("update_prescription_endpoint: medication frequency must be a string")
-                            return jsonify({'error': 'medication frequency must be a string'}), 400
-                        updates['frequency'] = med['frequency']
-                        
-                    if 'quantity' in med:
-                        try:
-                            updates['quantity'] = int(med['quantity'])
-                        except (ValueError, TypeError):
-                            logger.warning("update_prescription_endpoint: medication quantity must be an integer")
-                            return jsonify({'error': 'medication quantity must be an integer'}), 400
-                            
-                    if 'duration' in med:
-                        if not isinstance(med['duration'], str):
-                            logger.warning("update_prescription_endpoint: medication duration must be a string")
-                            return jsonify({'error': 'medication duration must be a string'}), 400
-                        # Parse duration string to extract end date if needed
-                        try:
-                            if ' to ' in med['duration']:
-                                start_str, end_str = med['duration'].split(' to ')
-                                end_date = datetime.strptime(end_str.strip(), '%b %d, %Y').date()
-                                updates['end_date'] = end_date
-                        except ValueError as e:
-                            logger.warning(f"update_prescription_endpoint: Invalid duration format: {str(e)}")
-                            # Don't return error, just skip end date update
-                            
-                    # Only process the first medication for now
-                    break
+                # Only validate medications if present and not None
+                if value is not None:
+                    if not isinstance(value, list):
+                        logger.warning("update_prescription_endpoint: medications must be an array")
+                        return jsonify({'error': 'medications must be an array'}), 400
+                    if len(value) == 0:
+                        # Only require non-empty if user is actually trying to update medications
+                        logger.info("update_prescription_endpoint: medications array is empty, skipping medication update.")
+                        continue
+                    # Process each medication in the array
+                    for med in value:
+                        if not isinstance(med, dict):
+                            logger.warning("update_prescription_endpoint: each medication must be an object")
+                            return jsonify({'error': 'each medication must be an object'}), 400
+                        # Extract and validate medication fields
+                        if 'dosage' in med:
+                            if not isinstance(med['dosage'], str):
+                                logger.warning("update_prescription_endpoint: medication dosage must be a string")
+                                return jsonify({'error': 'medication dosage must be a string'}), 400
+                            updates['dosage'] = med['dosage']
+                        if 'frequency' in med:
+                            if not isinstance(med['frequency'], str):
+                                logger.warning("update_prescription_endpoint: medication frequency must be a string")
+                                return jsonify({'error': 'medication frequency must be a string'}), 400
+                            updates['frequency'] = med['frequency']
+                        if 'quantity' in med:
+                            try:
+                                updates['quantity'] = int(med['quantity'])
+                            except (ValueError, TypeError):
+                                logger.warning("update_prescription_endpoint: medication quantity must be an integer")
+                                return jsonify({'error': 'medication quantity must be an integer'}), 400
+                        if 'duration' in med:
+                            if not isinstance(med['duration'], str):
+                                logger.warning("update_prescription_endpoint: medication duration must be a string")
+                                return jsonify({'error': 'medication duration must be a string'}), 400
+                            # Parse duration string to extract end date if needed
+                            try:
+                                if ' to ' in med['duration']:
+                                    start_str, end_str = med['duration'].split(' to ')
+                                    end_date = datetime.strptime(end_str.strip(), '%b %d, %Y').date()
+                                    updates['end_date'] = end_date
+                            except ValueError as e:
+                                logger.warning(f"update_prescription_endpoint: Invalid duration format: {str(e)}")
+                                # Don't return error, just skip end date update
+                        # Only process the first medication for now
+                        break
             else:
                 logger.warning(f"update_prescription_endpoint: Ignoring unknown field: {field}")
 
@@ -1765,6 +1837,87 @@ class PrescriptionSystem:
         
         # Set up update handlers
         self._setup_update_handlers()
+
+    def get_prescription(self, prescription_id: str) -> Optional[Dict]:
+        """Get a specific prescription by ID.
+        
+        Args:
+            prescription_id: The ID of the prescription to retrieve
+            
+        Returns:
+            Dict containing prescription details if found, None otherwise
+        """
+        try:
+            conn = self.db_manager._get_connection()
+            cursor = conn.cursor(dictionary=True)
+            
+            # Query to get prescription with all necessary details
+            query = """
+                SELECT p.*, 
+                       m.name as medication_name, m.generic_name,
+                       u.name as doctor_name, u.email as doctor_email,
+                       pat.name as patient_name, pat.email as patient_email
+                FROM prescriptions p
+                JOIN medications m ON p.medication_id = m.id
+                JOIN users u ON p.prescribed_by = u.id
+                JOIN users pat ON p.patient_id = pat.id
+                WHERE p.id = %s
+            """
+            cursor.execute(query, (prescription_id,))
+            prescription = cursor.fetchone()
+            
+            if not prescription:
+                logger.warning(f"Prescription {prescription_id} not found")
+                return None
+                
+            # Format the prescription data
+            formatted_prescription = {
+                'id': prescription['id'],
+                'patient_id': prescription['patient_id'],
+                'patient_name': prescription['patient_name'],
+                'patient_email': prescription['patient_email'],
+                'medication_id': prescription['medication_id'],
+                'medication_name': prescription['medication_name'],
+                'generic_name': prescription['generic_name'],
+                'prescribed_by': prescription['prescribed_by'],
+                'doctor_name': prescription['doctor_name'],
+                'doctor_email': prescription['doctor_email'],
+                'dosage': prescription['dosage'],
+                'frequency': prescription['frequency'],
+                'quantity': prescription['quantity'],
+                'status': prescription['status'],
+                'notes': prescription['notes'],
+                'created_at': prescription['created_at'].strftime('%a, %d %b %Y %H:%M:%S GMT') if prescription['created_at'] else None
+            }
+            
+            # Add optional fields only if they exist
+            if prescription.get('start_date'):
+                formatted_prescription['start_date'] = prescription['start_date'].strftime('%Y-%m-%d')
+            if prescription.get('end_date'):
+                formatted_prescription['end_date'] = prescription['end_date'].strftime('%Y-%m-%d')
+            if prescription.get('approved_at'):
+                formatted_prescription['approved_at'] = prescription['approved_at'].strftime('%a, %d %b %Y %H:%M:%S GMT')
+            if prescription.get('approved_by'):
+                formatted_prescription['approved_by'] = prescription['approved_by']
+            if prescription.get('dispensed_at'):
+                formatted_prescription['dispensed_at'] = prescription['dispensed_at'].strftime('%a, %d %b %Y %H:%M:%S GMT')
+                
+            return formatted_prescription
+            
+        except Exception as e:
+            logger.error(f"Error getting prescription {prescription_id}: {str(e)}")
+            raise
+        finally:
+            if cursor:
+                try:
+                    cursor.close()
+                except:
+                    pass
+            if conn:
+                try:
+                    conn.close()
+                except:
+                    pass
 
     def get_inventory_status(self):
         """
@@ -2425,6 +2578,393 @@ def get_inventory_analytics():
         if cursor:
             try:
                 cursor.close()
+            except:
+                pass
+
+# Cart and Purchase Management
+class CartManager:
+    def __init__(self, db_manager):
+        self.db = db_manager
+
+    def get_cart_items(self, user_id: str) -> List[Dict]:
+        try:
+            return self.db.execute_query(
+                """
+                SELECT 
+                    c.prescription_id,
+                    m.name as medicine_name,
+                    p.dosage,
+                    p.frequency,
+                    c.quantity,
+                    c.price,
+                    p.status,
+                    p.prescribed_by,
+                    p.created_at as prescribed_at,
+                    p.dispensed_at,
+                    m.generic_name,
+                    m.description,
+                    u.name as doctor_name
+                FROM cart_items c
+                JOIN prescriptions p ON c.prescription_id = p.id
+                JOIN medications m ON p.medication_id = m.id
+                JOIN users u ON p.prescribed_by = u.id
+                WHERE c.user_id = %s
+                ORDER BY c.added_at DESC
+                """,
+                (user_id,)
+            )
+        except Exception as e:
+            print(f"Error getting cart items: {e}")
+            return []
+
+    def clear_cart(self, user_id: str) -> bool:
+        # Since we're using completed prescriptions directly, this method is no longer needed
+        return True
+
+class PurchaseManager:
+    def __init__(self, db_manager):
+        self.db = db_manager
+
+    def create_purchase(self, user_id: str, cart_items: List[Dict]) -> Optional[str]:
+        try:
+            # Start transaction
+            self.db.execute_query("START TRANSACTION", fetch=False)
+            
+            # Create purchase record
+            purchase_id = str(uuid.uuid4())
+            total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
+            
+            self.db.execute_query(
+                """
+                INSERT INTO purchases (
+                    id, user_id, total_amount, status, created_at
+                ) VALUES (%s, %s, %s, 'pending', NOW())
+                """,
+                (purchase_id, user_id, total_amount),
+                fetch=False
+            )
+
+            # Create purchase items
+            for item in cart_items:
+                purchase_item_id = str(uuid.uuid4())
+                self.db.execute_query(
+                    """
+                    INSERT INTO purchase_items (
+                        id, purchase_id, prescription_id, quantity, price
+                    ) VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (purchase_item_id, purchase_id, item['prescription_id'], item['quantity'], item['price']),
+                    fetch=False
+                )
+
+                # Update inventory
+                self.db.execute_query(
+                    """
+                    UPDATE inventory 
+                    SET quantity = quantity - %s 
+                    WHERE medication_id = (
+                        SELECT medication_id FROM prescriptions WHERE id = %s
+                    )
+                    """,
+                    (item['quantity'], item['prescription_id']),
+                    fetch=False
+                )
+
+            # Commit transaction
+            self.db.execute_query("COMMIT", fetch=False)
+            return purchase_id
+        except Exception as e:
+            # Rollback on error
+            self.db.execute_query("ROLLBACK", fetch=False)
+            print(f"Error creating purchase: {e}")
+            return None
+
+# Initialize managers
+cart_manager = CartManager(db_manager)
+purchase_manager = PurchaseManager(db_manager)
+
+def initialize_cart_tables():
+    try:
+        db_manager.execute_query("""
+            CREATE TABLE IF NOT EXISTS cart_items (
+                id VARCHAR(36) PRIMARY KEY,
+                user_id VARCHAR(36) NOT NULL,
+                prescription_id VARCHAR(36) NOT NULL,
+                added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (prescription_id) REFERENCES prescriptions(id)
+            )
+        """, fetch=False)
+
+        db_manager.execute_query("""
+            CREATE TABLE IF NOT EXISTS purchases (
+                id VARCHAR(36) PRIMARY KEY,
+                user_id VARCHAR(36) NOT NULL,
+                total_amount DECIMAL(10,2) NOT NULL,
+                status ENUM('pending', 'completed', 'cancelled') NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                completed_at TIMESTAMP NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        """, fetch=False)
+
+        db_manager.execute_query("""
+            CREATE TABLE IF NOT EXISTS purchase_items (
+                id VARCHAR(36) PRIMARY KEY,
+                purchase_id VARCHAR(36) NOT NULL,
+                prescription_id VARCHAR(36) NOT NULL,
+                quantity INT NOT NULL,
+                price DECIMAL(10,2) NOT NULL,
+                FOREIGN KEY (purchase_id) REFERENCES purchases(id),
+                FOREIGN KEY (prescription_id) REFERENCES prescriptions(id)
+            )
+        """, fetch=False)
+
+    except Exception as e:
+        print(f"Error initializing cart tables: {e}")
+
+# Add new endpoints
+@app.route('/api/recommendations', methods=['GET'])
+@login_required
+def get_recommendations():
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User not authenticated'}), 401
+
+        # Get approved prescriptions for the user
+        recommendations = db_manager.execute_query(
+            """
+            SELECT 
+                p.id,
+                m.name as medicine_name,
+                p.dosage,
+                p.frequency,
+                p.quantity,
+                m.price as price,
+                p.status,
+                p.notes,
+                p.prescribed_by,
+                p.created_at as prescribed_at,
+                m.generic_name,
+                m.description,
+                u.name as recommended_by
+            FROM prescriptions p
+            JOIN medications m ON p.medication_id = m.id
+            JOIN users u ON p.prescribed_by = u.id
+            WHERE p.patient_id = %s 
+            AND p.status = 'approved'
+            ORDER BY p.created_at DESC
+            """,
+            (user_id,)
+        )
+
+        return jsonify(recommendations)
+    except Exception as e:
+        print(f"Error fetching recommendations: {e}")
+        return jsonify({'error': 'Failed to fetch recommendations'}), 500
+
+@app.route('/api/cart', methods=['GET'])
+@login_required
+def get_cart():
+    """Get all completed prescriptions for the current user."""
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User not authenticated'}), 401
+
+        cart_items = cart_manager.get_cart_items(user_id)
+        return jsonify(cart_items)
+    except Exception as e:
+        print(f"Error getting cart items: {e}")
+        return jsonify({'error': 'Failed to get cart items'}), 500
+
+@app.route('/api/cart/add', methods=['POST'])
+@login_required
+def add_to_cart():
+    return jsonify({'error': 'This endpoint is no longer supported. Cart items are now based on completed prescriptions.'}), 400
+
+@app.route('/api/cart/remove', methods=['POST'])
+@login_required
+def remove_from_cart():
+    return jsonify({'error': 'This endpoint is no longer supported. Cart items are now based on completed prescriptions.'}), 400
+
+@app.route('/api/cart/clear', methods=['POST'])
+@login_required
+def clear_cart():
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User not authenticated'}), 401
+
+        success = cart_manager.clear_cart(user_id)
+        if success:
+            return jsonify({'message': 'Cart cleared successfully'})
+        else:
+            return jsonify({'error': 'Failed to clear cart'}), 400
+    except Exception as e:
+        print(f"Error clearing cart: {e}")
+        return jsonify({'error': 'Failed to clear cart'}), 500
+
+@app.route('/api/purchase', methods=['POST'])
+@login_required
+def create_purchase():
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User not authenticated'}), 401
+
+        # Get cart items
+        cart_items = cart_manager.get_cart_items(user_id)
+        if not cart_items:
+            return jsonify({'error': 'Cart is empty'}), 400
+
+        # Create purchase
+        purchase_id = purchase_manager.create_purchase(user_id, cart_items)
+        if not purchase_id:
+            return jsonify({'error': 'Failed to create purchase'}), 500
+
+        # Clear cart after successful purchase
+        cart_manager.clear_cart(user_id)
+
+        return jsonify({
+            'message': 'Purchase created successfully',
+            'purchase_id': purchase_id
+        })
+    except Exception as e:
+        print(f"Error creating purchase: {e}")
+        return jsonify({'error': 'Failed to create purchase'}), 500
+
+# Initialize cart tables during system startup
+initialize_cart_tables()
+
+@app.route('/api/prescriptions/<prescription_id>/dispense', methods=['POST'])
+def dispense_prescription(prescription_id):
+    """Dispense a prescription (pharmacist only): sets status to 'completed' and dispensed_at to now, and adds to cart."""
+    try:
+        # Check if user is authenticated and has pharmacist role
+        if 'user_id' not in session or session.get('role') != 'pharmacist':
+            logger.warning(f"Unauthorized access attempt to dispense prescription {prescription_id} by user with role {session.get('role')}")
+            return jsonify({'error': 'Unauthorized - pharmacist access required'}), 403
+
+        # Get modifications from request (optional notes, quantity, price)
+        data = request.get_json() or {}
+
+        conn = db_manager._get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Get the prescription
+        query = """
+            SELECT p.*, m.name as medication_name
+            FROM prescriptions p
+            JOIN medications m ON p.medication_id = m.id
+            WHERE p.id = %s
+        """
+        cursor.execute(query, (prescription_id,))
+        prescription = cursor.fetchone()
+
+        if not prescription:
+            logger.warning(f"Prescription {prescription_id} not found for dispensing")
+            return jsonify({'error': 'Prescription not found'}), 404
+
+        # Only allow dispensing if not already completed
+        if prescription['status'] == 'completed' and prescription.get('dispensed_at'):
+            return jsonify({'error': 'Prescription already dispensed'}), 400
+
+        # Prepare updates
+        updates = {
+            'status': 'completed',
+            'dispensed_at': datetime.now()
+        }
+
+        # Get and validate quantity from request
+        cart_quantity = None
+        cart_price = None
+        if 'quantity' in data:
+            try:
+                updates['quantity'] = int(data['quantity'])
+                cart_quantity = updates['quantity']
+                if updates['quantity'] < 0:
+                    return jsonify({'error': 'Quantity must be a non-negative integer'}), 400
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid quantity value for prescription {prescription_id}: {data['quantity']}")
+                return jsonify({'error': 'Invalid quantity value. Must be an integer.'}), 400
+        else:
+            cart_quantity = prescription.get('quantity', 0)
+
+        # Get and validate price from request
+        if 'price' in data:
+            try:
+                cart_price = float(data['price'])
+                if cart_price < 0:
+                     return jsonify({'error': 'Price must be a non-negative number'}), 400
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid price value for prescription {prescription_id}: {data['price']}")
+                return jsonify({'error': 'Invalid price value. Must be a number.'}), 400
+        else:
+            # Try to get price from medication table
+            cursor.execute("SELECT price FROM medications WHERE id = %s", (prescription['medication_id'],))
+            med = cursor.fetchone()
+            cart_price = med['price'] if med and med['price'] else 0.00
+
+        if 'notes' in data:
+            updates['notes'] = data['notes']
+
+        # Build and execute update query
+        update_query_parts = []
+        update_params = []
+        for field, value in updates.items():
+            update_query_parts.append(f"{field} = %s")
+            update_params.append(value)
+        update_params.append(prescription_id)
+
+        update_query = f"UPDATE prescriptions SET {', '.join(update_query_parts)} WHERE id = %s"
+        cursor.execute(update_query, update_params)
+        conn.commit()
+
+        # Insert into cart_items with quantity and price
+        cart_id = str(uuid.uuid4())
+        user_id = prescription['patient_id']
+        cursor.execute(
+            """
+            INSERT INTO cart_items (id, user_id, prescription_id, quantity, price, added_at)
+            VALUES (%s, %s, %s, %s, %s, NOW())
+            AS new
+            ON DUPLICATE KEY UPDATE quantity = new.quantity, price = new.price, added_at = NOW()
+            """,
+            (cart_id, user_id, prescription_id, cart_quantity, cart_price)
+        )
+        conn.commit()
+
+        # Get the updated prescription
+        cursor.execute(query, (prescription_id,))
+        updated = cursor.fetchone()
+
+        logger.info(f"Successfully dispensed prescription {prescription_id} with quantity {cart_quantity} and price {cart_price} and added to cart")
+        return jsonify({
+            'message': 'Prescription dispensed and added to cart successfully',
+            'prescription': updated
+        }), 200
+
+    except Error as e:
+        if conn:
+            conn.rollback()
+        logger.error(f"Database error dispensing prescription {prescription_id}: {str(e)}")
+        return jsonify({'error': 'Database error dispensing prescription'}), 500
+    except Exception as e:
+        logger.error(f"Error dispensing prescription {prescription_id}: {str(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': 'An unexpected error occurred while dispensing prescription'}), 500
+    finally:
+        if 'cursor' in locals() and cursor:
+            try:
+                cursor.close()
+            except:
+                pass
+        if 'conn' in locals() and conn:
+            try:
+                conn.close()
             except:
                 pass
 

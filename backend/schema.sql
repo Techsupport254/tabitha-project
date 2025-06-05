@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS prescriptions (
     quantity INT,
     approved_at TIMESTAMP NULL DEFAULT NULL,
     approved_by VARCHAR(36) NULL,
+    dispensed_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (patient_id) REFERENCES users(id),
     FOREIGN KEY (medication_id) REFERENCES medications(id),
     FOREIGN KEY (prescribed_by) REFERENCES users(id),
@@ -101,6 +102,48 @@ CREATE TABLE IF NOT EXISTS inventory_transactions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE CASCADE
 );
+
+-- Create cart_items table
+CREATE TABLE IF NOT EXISTS cart_items (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    prescription_id VARCHAR(36) NOT NULL,
+    quantity INT DEFAULT 0,
+    price DECIMAL(10,2) DEFAULT 0.00,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE
+);
+
+-- Create purchases table
+CREATE TABLE IF NOT EXISTS purchases (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    status ENUM('pending', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create purchase_items table
+CREATE TABLE IF NOT EXISTS purchase_items (
+    id VARCHAR(36) PRIMARY KEY,
+    purchase_id VARCHAR(36) NOT NULL,
+    prescription_id VARCHAR(36) NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (purchase_id) REFERENCES purchases(id) ON DELETE CASCADE,
+    FOREIGN KEY (prescription_id) REFERENCES prescriptions(id) ON DELETE CASCADE
+);
+
+-- Add indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_prescription_id ON cart_items(prescription_id);
+CREATE INDEX IF NOT EXISTS idx_purchases_user_id ON purchases(user_id);
+CREATE INDEX IF NOT EXISTS idx_purchases_status ON purchases(status);
+CREATE INDEX IF NOT EXISTS idx_purchase_items_purchase_id ON purchase_items(purchase_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_items_prescription_id ON purchase_items(prescription_id);
 
 -- Ensure id field in patient_medical_history has a default value
 ALTER TABLE patient_medical_history MODIFY COLUMN id INT AUTO_INCREMENT;

@@ -31,10 +31,10 @@ const Footer = () => {
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 					{/* Company Info */}
 					<div className="space-y-4">
-						<h3 className="text-xl font-bold">Pharmacy Management</h3>
+						<h3 className="text-xl font-bold">UzuriChem</h3>
 						<p className="text-gray-400">
-							Streamlining healthcare management with innovative solutions for
-							pharmacies and healthcare providers.
+							AI-powered healthcare management system for accurate diagnosis and
+							prescription management at Uzuri Chem Pharmacy.
 						</p>
 						<div className="flex space-x-4">
 							<a
@@ -88,7 +88,7 @@ const Footer = () => {
 				<div className="border-t border-gray-800 mt-12 pt-8">
 					<div className="flex flex-col md:flex-row justify-between items-center">
 						<p className="text-gray-400 text-sm">
-							© {currentYear} Pharmacy Management System. All rights reserved.
+							© {currentYear} UzuriChem. All rights reserved.
 						</p>
 						<div className="flex space-x-6 mt-4 md:mt-0">
 							<Link

@@ -34,6 +34,7 @@ import Cart from "../pages/Cart";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
 import UserManagement from "../pages/UserManagement";
+import RecommendedMedicine from "../pages/RecommendedMedicine";
 
 // Custom hook for authentication
 const useAuth = () => {
@@ -148,6 +149,14 @@ const App = () => {
 					<Route path="/help-support" element={<HelpSupport />} />
 					<Route path="/contact" element={<Contact />} />
 					<Route path="/cart" element={<Cart />} />
+					<Route
+						path="/recommended-medicine"
+						element={
+							<AuthGuard>
+								<RecommendedMedicine />
+							</AuthGuard>
+						}
+					/>
 					<Route
 						path="/profile"
 						element={

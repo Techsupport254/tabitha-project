@@ -30,36 +30,61 @@ const Header = () => {
 	const [showMobileMenu, setShowMobileMenu] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isForbidden, setIsForbidden] = useState(false);
+	const [cartCount, setCartCount] = useState(0);
 	const navigate = useNavigate();
 	const dropdownRef = useRef(null);
 	const notificationsRef = useRef(null);
 	const mobileMenuRef = useRef(null);
 
-	// Fetch user data on component mount using session cookie
+	// Fetch user data and cart count on component mount
 	useEffect(() => {
-		const fetchUser = async () => {
+		const fetchUserAndCart = async () => {
 			try {
-				const response = await api.get("/api/user");
-				if (response.data) {
-					setUser(response.data);
+				const [userResponse, cartResponse] = await Promise.all([
+					api.get("/api/user"),
+					api.get("/api/cart"),
+				]);
+
+				if (userResponse.data) {
+					setUser(userResponse.data);
 					setIsForbidden(false);
 				}
+
+				if (cartResponse.data) {
+					setCartCount(
+						Array.isArray(cartResponse.data) ? cartResponse.data.length : 0
+					);
+				}
 			} catch (error) {
-				console.error("Failed to fetch user data:", error);
+				console.error("Failed to fetch user data or cart:", error);
 				if (error.response && error.response.status === 403) {
 					setIsForbidden(true);
 					setUser(null);
-					// Optionally redirect to a forbidden page or show a message
-					// navigate('/forbidden');
 				} else {
 					setUser(null);
 					setIsForbidden(false);
 				}
+				setCartCount(0);
 			} finally {
 				setIsLoading(false);
 			}
 		};
-		fetchUser();
+		fetchUserAndCart();
+
+		// Set up interval to refresh cart count
+		const cartRefreshInterval = setInterval(async () => {
+			try {
+				const response = await api.get("/api/cart");
+				if (response.data) {
+					setCartCount(Array.isArray(response.data) ? response.data.length : 0);
+				}
+			} catch (error) {
+				console.error("Failed to refresh cart count:", error);
+				setCartCount(0);
+			}
+		}, 30000); // Refresh every 30 seconds
+
+		return () => clearInterval(cartRefreshInterval);
 	}, []); // Empty dependency array to run only once on mount
 
 	useEffect(() => {
@@ -207,11 +232,11 @@ const Header = () => {
 							</div>
 							<div className="flex items-center space-x-2">
 								<FaEnvelope className="text-blue-200" />
-								<span className="text-sm">info@newchem.com</span>
+								<span className="text-sm">info@uzurichem.com</span>
 							</div>
 							<div className="flex items-center space-x-2">
 								<FaMapMarkerAlt className="text-blue-200" />
-								<span className="text-sm">Nairobi, Kenya</span>
+								<span className="text-sm">Thika, Kenya</span>
 							</div>
 						</div>
 						<div className="flex items-center space-x-4">
@@ -238,11 +263,13 @@ const Header = () => {
 					{/* Logo */}
 					<Link to="/" className="flex items-center space-x-3">
 						<div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-							<span className="text-white text-xl font-bold">P</span>
+							<span className="text-white text-xl font-bold">U</span>
 						</div>
 						<div className="flex flex-col">
-							<span className="text-xl font-bold text-gray-900">NewChem</span>
-							<span className="text-xs text-gray-600">Pharmacy</span>
+							<span className="text-xl font-bold text-gray-900">UzuriChem</span>
+							<span className="text-xs text-gray-600">
+								AI Medicine Prescription
+							</span>
 						</div>
 					</Link>
 
@@ -265,9 +292,11 @@ const Header = () => {
 						{/* Medicine Cart */}
 						<Link to="/cart" className="relative group">
 							<FaShoppingCart className="w-6 h-6 text-gray-600 group-hover:text-blue-600 transition-colors" />
-							<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-								0
-							</span>
+							{cartCount > 0 && (
+								<span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+									{cartCount}
+								</span>
+							)}
 						</Link>
 
 						{/* User Menu */}

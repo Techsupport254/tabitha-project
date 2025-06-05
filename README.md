@@ -1,14 +1,14 @@
-# NewChem - AI-Powered Healthcare Assistant
+# AI Medicine Prescription System - AI-Powered Healthcare Assistant
 
 ![alt text](image.png)
 
 ![alt text](image-1.png)
 
-NewChem is an intelligent healthcare management system developed for Uzuri Chem Pharmacy in Thika, Kenya. Powered by Tabitha, an AI assistant, the system helps healthcare providers manage medical information and provide preliminary diagnoses based on symptoms. The system uses AI/ML to analyze symptoms and provide medication recommendations while maintaining secure patient records and prescriptions.
+AI Medicine Prescription System is an intelligent healthcare management system developed for Uzuri Chem Pharmacy in Thika, Kenya. Powered by Tabitha, an AI assistant, the system helps healthcare providers manage medical information and provide preliminary diagnoses based on symptoms. The system uses AI/ML to analyze symptoms and provide medication recommendations while maintaining secure patient records and prescriptions.
 
 ## Project Context
 
-Uzuri Chem Pharmacy serves an average of 150 patients daily, with patients coming from Thika Road and surrounding areas including Muranga. The system was developed to address key challenges faced by the pharmacy:
+Uzur Chem Pharmacy serves an average of 150 patients daily, with patients coming from Thika Road and surrounding areas including Muranga. The system was developed to address key challenges faced by the pharmacy:
 
 - High patient volume leading to overwhelmed healthcare providers
 - Delays in retrieving medical records
@@ -20,12 +20,12 @@ Uzuri Chem Pharmacy serves an average of 150 patients daily, with patients comin
 
 ### General Objective
 
-To develop an AI Medicine Prescription System for Uzuri Chem Pharmacy that enhances diagnostic accuracy and treatment efficiency.
+To develop an AI Medicine Prescription System for Uzur Chem Pharmacy that enhances diagnostic accuracy and treatment efficiency.
 
 ### Specific Objectives
 
 1. Analyze existing AI medicine prescription systems
-2. Design an AI medicine prescription system tailored to Uzuri Chem Pharmacy's needs
+2. Design an AI medicine prescription system tailored to Uzur Chem Pharmacy's needs
 3. Implement the AI medicine prescription system
 4. Evaluate the system's performance and effectiveness
 
@@ -199,7 +199,7 @@ FLASK_SECRET_KEY=your-secret-key-here
 MYSQL_DATABASE_HOST=localhost
 MYSQL_DATABASE_USER=your-db-user
 MYSQL_DATABASE_PASSWORD=your-db-password
-MYSQL_DATABASE_DB=newchem
+MYSQL_DATABASE_DB=medicine_prescription_system
 MYSQL_DATABASE_PORT=3306
 
 # AI Model Configuration
@@ -233,11 +233,11 @@ REACT_APP_SENTRY_DSN=your-sentry-dsn
 mysql -u root -p
 
 # Create database
-CREATE DATABASE newchem;
-USE newchem;
+CREATE DATABASE medicine_prescription_system;
+USE medicine_prescription_system;
 
 # Exit MySQL and run schema
-mysql -u root -p newchem < backend/schema.sql
+mysql -u root -p medicine_prescription_system < backend/schema.sql
 ```
 
 6. **Create Test Users (Optional)**
@@ -345,8 +345,8 @@ sudo cp build/* /var/www/html/
 ```bash
 # Create production database
 mysql -u root -p
-CREATE DATABASE newchem_prod;
-USE newchem_prod;
+CREATE DATABASE medicine_prescription_system_prod;
+USE medicine_prescription_system_prod;
 source backend/schema.sql
 ```
 
@@ -438,17 +438,17 @@ For support, please contact the development team or open an issue in the reposit
 - Tabitha AI Assistant for intelligent healthcare support
 - Contributors and maintainers of all open-source libraries used
 - Healthcare professionals who provided domain expertise
-- Uzuri Chem Pharmacy staff for their valuable feedback and support
+- Uzur Chem Pharmacy staff for their valuable feedback and support
 - Project Supervisor Don. Dennis Njagi for guidance and direction
 
-# newchem-project
+# medicine-prescription-system
 
 ## Chapter 4: System Implementation, Testing, and Evaluation
 
 ### 4.1 Project Structure
 
 ```
-newchem/                           # Root project directory
+medicine-prescription-system/                           # Root project directory
 ├── venv/                          # Python virtual environment (activated from root)
 ├── backend/                       # Backend Flask application
 │   ├── app.py                    # Main application entry point (2439 lines)
@@ -724,9 +724,9 @@ The system processes several types of data (from data_processing.py):
    - Performance monitoring
    - Security audits
 
-![alt text](image-24.png)
+![alt text](image-23.png)
 
-![alt text](image-25.png)
+![alt text](image-24.png)
 
 ![alt text](image-2.png)
 
@@ -769,5 +769,3 @@ The system processes several types of data (from data_processing.py):
 ![alt text](image-21.png)
 
 ![alt text](image-22.png)
-
-![alt text](image-23.png)

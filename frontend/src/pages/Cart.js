@@ -1,59 +1,57 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { FaTrash, FaMinus, FaPlus, FaArrowLeft } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
+import api from "../utils/api";
+import {
+	Layout,
+	Card,
+	Button,
+	Typography,
+	Row,
+	Col,
+	Spin,
+	message,
+	Empty,
+	Divider,
+} from "antd";
+
+const { Content } = Layout;
+const { Title, Text } = Typography;
 
 const Cart = () => {
 	const [cartItems, setCartItems] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
-		// Simulate loading cart items
-		setTimeout(() => {
-			setCartItems([
-				{
-					id: 1,
-					name: "Paracetamol 500mg",
-					price: 150,
-					quantity: 2,
-					image: "https://placehold.co/100x100",
-					prescription: false,
-				},
-				{
-					id: 2,
-					name: "Vitamin C 1000mg",
-					price: 350,
-					quantity: 1,
-					image: "https://placehold.co/100x100",
-					prescription: true,
-				},
-				{
-					id: 3,
-					name: "Ibuprofen 400mg",
-					price: 200,
-					quantity: 3,
-					image: "https://placehold.co/100x100",
-					prescription: false,
-				},
-			]);
-			setLoading(false);
-		}, 1000);
+		fetchCartItems();
 	}, []);
 
-	const updateQuantity = (id, change) => {
-		setCartItems((prevItems) =>
-			prevItems.map((item) =>
-				item.id === id
-					? {
-							...item,
-							quantity: Math.max(1, item.quantity + change),
-					  }
-					: item
-			)
-		);
+	const fetchCartItems = async () => {
+		try {
+			const response = await api.get("/api/cart");
+			setCartItems(response.data);
+			setLoading(false);
+		} catch (err) {
+			console.error("Error fetching cart items:", err);
+			setError("Failed to load cart items. Please try again later.");
+			message.error("Failed to load cart items. Please try again later.");
+			setLoading(false);
+		}
 	};
 
-	const removeItem = (id) => {
-		setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+	const handleCheckout = async () => {
+		try {
+			const response = await api.post("/api/purchase");
+			if (response.data.purchase_id) {
+				navigate(`/purchase/${response.data.purchase_id}`);
+			}
+		} catch (err) {
+			console.error("Error creating purchase:", err);
+			setError("Failed to process checkout. Please try again later.");
+			message.error("Failed to process checkout. Please try again later.");
+		}
 	};
 
 	const formatPrice = (price) => {
@@ -74,158 +72,160 @@ const Cart = () => {
 
 	if (loading) {
 		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="animate-pulse space-y-4">
-					<div className="h-8 bg-gray-200 rounded w-1/4"></div>
-					<div className="space-y-3">
-						{[1, 2, 3].map((i) => (
-							<div key={i} className="h-24 bg-gray-200 rounded"></div>
-						))}
-					</div>
-				</div>
-			</div>
+			<Layout style={{ minHeight: "100vh" }}>
+				<Content style={{ padding: "40px 20px", textAlign: "center" }}>
+					<Spin size="large" tip="Loading Cart..." />
+				</Content>
+			</Layout>
+		);
+	}
+
+	if (error) {
+		return (
+			<Layout style={{ minHeight: "100vh" }}>
+				<Content style={{ padding: "40px 20px", textAlign: "center" }}>
+					<Card title="Error" style={{ width: 300, margin: "0 auto" }}>
+						<Title level={4} type="danger">
+							{error}
+						</Title>
+						<Button
+							type="primary"
+							onClick={fetchCartItems}
+							style={{ marginTop: 16 }}
+						>
+							Try Again
+						</Button>
+					</Card>
+				</Content>
+			</Layout>
 		);
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-8">
-			{/* Breadcrumb */}
-			<div className="mb-8">
-				<Link
-					to="/"
-					className="text-blue-600 hover:text-blue-800 flex items-center"
-				>
-					<FaArrowLeft className="mr-2" />
-					Continue Shopping
-				</Link>
-			</div>
-
-			<h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
-
-			{cartItems.length === 0 ? (
-				<div className="text-center py-12">
-					<h2 className="text-2xl font-semibold text-gray-900 mb-4">
-						Your cart is empty
-					</h2>
-					<p className="text-gray-600 mb-8">
-						Looks like you haven't added any items to your cart yet.
-					</p>
-					<Link
-						to="/"
-						className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-					>
-						Start Shopping
-					</Link>
-				</div>
-			) : (
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-					{/* Cart Items */}
-					<div className="lg:col-span-2">
-						<div className="bg-white rounded-lg shadow-sm">
-							{cartItems.map((item) => (
-								<div
-									key={item.id}
-									className="p-6 border-b border-gray-200 last:border-b-0"
-								>
-									<div className="flex items-center">
-										<img
-											src={item.image}
-											alt={item.name}
-											className="w-20 h-20 object-cover rounded-lg"
-										/>
-										<div className="ml-6 flex-1">
-											<div className="flex justify-between">
-												<div>
-													<h3 className="text-lg font-medium text-gray-900">
-														{item.name}
-													</h3>
-													{item.prescription && (
-														<span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full mt-1">
-															Prescription Required
-														</span>
-													)}
+		<Layout style={{ minHeight: "100vh", backgroundColor: "#f0f2f5" }}>
+			<Content
+			className="container mx-auto px-4 py-8 max-w-7xl"
+			>
+				<Row gutter={[32, 32]}>
+					<Col span={24} style={{ marginBottom: 24 }}>
+						<Link
+							to="/"
+							style={{
+								color: "#1677ff",
+								display: "inline-flex",
+								alignItems: "center",
+								fontSize: 16,
+							}}
+						>
+							<FaArrowLeft style={{ marginRight: 8 }} /> Continue Shopping
+						</Link>
+					</Col>
+					<Col xs={24} lg={16}>
+						<Title level={2} style={{ marginBottom: 24 }}>
+							Shopping Cart
+						</Title>
+						{cartItems.length === 0 ? (
+							<Card style={{ textAlign: "center", padding: "40px 20px" }}>
+								<Empty description="Your cart is empty">
+									<Link to="/prescriptions">
+										<Button type="primary" size="large">
+											View Prescriptions
+										</Button>
+									</Link>
+								</Empty>
+							</Card>
+						) : (
+							<div>
+								{cartItems.map((item) => (
+									<Card
+										key={item.prescription_id}
+										style={{ marginBottom: 16 }}
+										bodyStyle={{ padding: "24px" }}
+									>
+										<Row
+											justify="space-between"
+											align="middle"
+											gutter={[16, 16]}
+										>
+											<Col xs={24} sm={16}>
+												<Title level={4} style={{ marginBottom: 4 }}>
+													{item.medicine_name}
+												</Title>
+												<Text type="secondary">{item.generic_name}</Text>
+												<div style={{ marginTop: 12 }}>
+													<Text>
+														<Text strong>Frequency:</Text> {item.frequency}
+													</Text>
+													<br />
+													<Text>
+														<Text strong>Prescribed by:</Text> Dr.{" "}
+														{item.doctor_name}
+													</Text>
+													<br />
+													<Text>
+														<Text strong>Prescribed on:</Text>{" "}
+														{new Date(item.prescribed_at).toLocaleDateString()}
+													</Text>
 												</div>
-												<button
-													onClick={() => removeItem(item.id)}
-													className="text-gray-400 hover:text-red-500 transition-colors"
-												>
-													<FaTrash />
-												</button>
-											</div>
-											<div className="mt-4 flex items-center justify-between">
-												<div className="flex items-center">
-													<button
-														onClick={() => updateQuantity(item.id, -1)}
-														className="text-gray-500 hover:text-blue-600 p-1"
-													>
-														<FaMinus />
-													</button>
-													<span className="mx-4 text-gray-900">
-														{item.quantity}
-													</span>
-													<button
-														onClick={() => updateQuantity(item.id, 1)}
-														className="text-gray-500 hover:text-blue-600 p-1"
-													>
-														<FaPlus />
-													</button>
-												</div>
-												<div className="text-right">
-													<p className="text-lg font-medium text-gray-900">
-														{formatPrice(item.price * item.quantity)}
-													</p>
-													<p className="text-sm text-gray-500">
-														{formatPrice(item.price)} each
-													</p>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-
-					{/* Order Summary */}
-					<div className="lg:col-span-1">
-						<div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-							<h2 className="text-xl font-semibold text-gray-900 mb-6">
+											</Col>
+											<Col xs={24} sm={8} style={{ textAlign: "right" }}>
+												<Title level={5} style={{ marginBottom: 4 }}>
+													{formatPrice(item.price * item.quantity)}
+												</Title>
+												<Text type="secondary">
+													{formatPrice(item.price)} each × {item.quantity}
+												</Text>
+											</Col>
+										</Row>
+									</Card>
+								))}
+							</div>
+						)}
+					</Col>
+					<Col xs={24} lg={8}>
+						<Card
+							style={{ position: "sticky", top: 24 }}
+							bodyStyle={{ padding: "24px" }}
+						>
+							<Title level={4} style={{ marginBottom: 24 }}>
 								Order Summary
-							</h2>
-							<div className="space-y-4">
-								<div className="flex justify-between text-gray-600">
-									<span>Subtotal</span>
-									<span>{formatPrice(subtotal)}</span>
-								</div>
-								<div className="flex justify-between text-gray-600">
-									<span>Shipping</span>
-									<span>{formatPrice(shipping)}</span>
-								</div>
-								<div className="border-t border-gray-200 pt-4">
-									<div className="flex justify-between text-lg font-semibold text-gray-900">
-										<span>Total</span>
-										<span>{formatPrice(total)}</span>
-									</div>
-								</div>
-							</div>
-							<button className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">
+							</Title>
+							<Row justify="space-between" style={{ marginBottom: 12 }}>
+								<Col>Subtotal</Col>
+								<Col>{formatPrice(subtotal)}</Col>
+							</Row>
+							<Row justify="space-between" style={{ marginBottom: 24 }}>
+								<Col>Shipping</Col>
+								<Col>{formatPrice(shipping)}</Col>
+							</Row>
+							<Divider style={{ margin: "0 0 24px 0" }} />
+							<Row justify="space-between">
+								<Col>
+									<Text strong>Total</Text>
+								</Col>
+								<Col>
+									<Text strong>{formatPrice(total)}</Text>
+								</Col>
+							</Row>
+							<Button
+								type="primary"
+								size="large"
+								block
+								onClick={handleCheckout}
+								style={{ marginTop: 24 }}
+							>
 								Proceed to Checkout
-							</button>
-							<div className="mt-4">
-								<span className="text-sm text-gray-500">We accept:</span>
-								<div className="mt-2 flex justify-center space-x-2">
-									<span className="text-gray-400">M-Pesa</span>
-									<span className="text-gray-400">•</span>
-									<span className="text-gray-400">Visa</span>
-									<span className="text-gray-400">•</span>
-									<span className="text-gray-400">Mastercard</span>
-								</div>
+							</Button>
+							<div style={{ marginTop: 16, textAlign: "center" }}>
+								<Text type="secondary">
+									We accept: M-Pesa • Visa • Mastercard
+								</Text>
 							</div>
-						</div>
-					</div>
-				</div>
-			)}
-		</div>
+						</Card>
+					</Col>
+				</Row>
+			</Content>
+		</Layout>
 	);
 };
 
