@@ -8,7 +8,7 @@ AI Medicine Prescription System is an intelligent healthcare management system d
 
 ## Project Context
 
-Uzur Chem Pharmacy serves an average of 150 patients daily, with patients coming from Thika Road and surrounding areas including Muranga. The system was developed to address key challenges faced by the pharmacy:
+Uzuri Chem Pharmacy serves an average of 150 patients daily, with patients coming from Thika Road and surrounding areas including Muranga. The system was developed to address key challenges faced by the pharmacy:
 
 - High patient volume leading to overwhelmed healthcare providers
 - Delays in retrieving medical records
@@ -20,142 +20,1608 @@ Uzur Chem Pharmacy serves an average of 150 patients daily, with patients coming
 
 ### General Objective
 
-To develop an AI Medicine Prescription System for Uzur Chem Pharmacy that enhances diagnostic accuracy and treatment efficiency.
+To develop an AI Medicine Prescription System for Uzuri Chem Pharmacy that enhances diagnostic accuracy and treatment efficiency.
 
 ### Specific Objectives
 
 1. Analyze existing AI medicine prescription systems
-2. Design an AI medicine prescription system tailored to Uzur Chem Pharmacy's needs
+2. Design an AI medicine prescription system tailored to Uzuri Chem Pharmacy's needs
 3. Implement the AI medicine prescription system
 4. Evaluate the system's performance and effectiveness
 
 ## Features
 
-- **AI-Powered Symptom Analysis**
+### AI-Powered Symptom Analysis
 
-  - Natural language processing for symptom extraction
-  - Disease prediction with confidence scores
-  - Medication recommendations based on symptoms and patient history
-  - Drug interaction checking
-  - Real-time symptom analysis
-  - Historical symptom pattern recognition
-  - Personalized treatment recommendations
+- Natural language processing for symptom extraction
+- Disease prediction with confidence scores
+- Medication recommendations based on symptoms and patient history
+- Drug interaction checking
+- Real-time symptom analysis
+- Historical symptom pattern recognition
+- Personalized treatment recommendations
 
-- **Patient Management**
+### Patient Management
 
-  - Secure patient record management
-  - Medical history tracking
-  - Prescription history
-  - Allergy and condition tracking
-  - Patient demographics management
-  - Emergency contact information
-  - Insurance information handling
-  - Quick patient data retrieval
+- Patient registration and profile management
+- Comprehensive medical history tracking
+- Prescription history management
+- Role-based access control
+- Patient record viewing and editing
+- Secure patient data storage
 
-- **Prescription System**
+### Prescription Management
 
-  - Digital prescription creation and management
-  - Prescription approval workflow
-  - Medication inventory tracking
-  - Automated refill reminders
-  - Electronic prescription transmission
-  - Prescription history analytics
-  - Drug interaction warnings
-  - Automated prescription verification
+- Digital prescription creation and management
+- Prescription approval workflow
+- Medication dispensing system
+- Prescription history tracking
+- Prescription status management (pending, active, completed, cancelled, approved)
+- Integration with inventory system
 
-- **User Management**
+### Inventory Management
 
-  - Role-based access control (Patient, Doctor, Pharmacist, Admin)
-  - Secure authentication with JWT
-  - Session management
-  - User profile management
-  - Activity logging
-  - Password reset functionality
-  - Two-factor authentication (optional)
-  - Staff training and support system
+- Real-time stock tracking
+- Low stock alerts and notifications
+- Expiry date monitoring
+- Inventory transaction logging
+- Stock level indicators
+- Automated reorder point tracking
 
-- **Inventory Management**
-  - Real-time inventory tracking
-  - Low stock alerts
-  - Expiry date monitoring
-  - Inventory transaction history
-  - Batch management
-  - Supplier management
-  - Automated reordering system
-  - Predictive inventory analytics
+### User Management
+
+- Role-based access control (admin, pharmacist, doctor, patient)
+- Secure user authentication
+- Profile management
+- Permission-based access to features
+- Session management
+- User activity logging
+
+### E-commerce Features
+
+- Shopping cart functionality
+
+### Help & Support
+
+- Comprehensive FAQ system
+- User guides and documentation
+- Contact information
+- Support ticket system (planned for future implementation)
 
 ## System Architecture
 
+The system follows a monolithic architecture with a clear separation of concerns, implemented using modern web technologies and best practices. The architecture is designed for scalability, maintainability, and security while ensuring efficient data flow and processing.
+
 ### Backend Architecture
 
-- **API Layer**: RESTful API built with Flask-RESTful
-- **Service Layer**: Business logic and AI/ML processing
-- **Data Layer**: MySQL database with SQLAlchemy ORM
-- **Authentication Layer**: JWT-based authentication with role-based access control
-- **AI/ML Layer**: TensorFlow and PyTorch models for symptom analysis
+1. **Application Server**
+
+   - Flask 2.3.3 web framework running on port 5001
+     - Custom middleware for request logging and authentication
+     - Error handling middleware with detailed logging
+     - Request validation middleware
+   - CORS Configuration:
+     - Enabled for frontend communication (localhost:3000)
+     - Supports credentials
+     - Allowed headers: Content-Type, Authorization
+     - Exposed headers: Content-Type, Authorization, Set-Cookie
+     - Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+     - Preflight cache: 600 seconds
+   - Session Management:
+     - Secure cookie-based sessions
+     - 24-hour session lifetime
+     - HTTP-only cookies
+     - SameSite=None for cross-origin requests
+     - Automatic session refresh on requests
+   - Environment Configuration:
+     - Development/Production mode switching
+     - Environment-specific logging levels
+     - Configurable database connections
+     - Secret key management
+
+2. **Core Components**
+
+   - `PrescriptionSystem` (Central Orchestrator):
+
+     - Manages system-wide operations
+     - Coordinates between different managers
+     - Handles data synchronization
+     - Initializes and maintains system state
+     - Manages update handlers for real-time updates
+
+   - `DatabaseManager`:
+
+     - Connection pool with 20 concurrent connections
+     - Automatic connection health checks (30-second intervals)
+     - Connection timeout: 30 seconds
+     - Automatic pool reinitialization on exhaustion
+     - User data caching (5-minute TTL)
+     - Prepared statement support
+     - Transaction management
+     - Error recovery mechanisms
+
+   - `PatientHistoryManager`:
+
+     - Patient record CRUD operations
+     - Medical history tracking
+     - Prescription history management
+     - Symptom history recording
+     - Allergy and condition tracking
+     - Data validation and sanitization
+
+   - `InventoryManager`:
+
+     - Real-time stock tracking
+     - Low stock monitoring
+     - Expiry date tracking
+     - Transaction logging
+     - Automated reorder point management
+     - Stock level analytics
+
+   - `SecurityManager`:
+
+     - Role-based access control
+     - Permission management
+     - Session security
+     - Password hashing and verification
+     - Security audit logging
+
+   - `DataSyncManager`:
+
+     - Asynchronous data synchronization
+     - Conflict resolution
+     - Data consistency checks
+     - Backup management
+     - Recovery procedures
+
+   - `MedicationRecommender`:
+     - AI-powered medication suggestions
+     - Drug interaction checking
+     - Dosage recommendations
+     - Allergy compatibility verification
+     - Confidence scoring
+
+3. **API Layer**
+
+   - RESTful Endpoints:
+
+     ```
+     /api/symptoms (POST)
+       - Symptom analysis and disease prediction
+       - Natural language processing
+       - Confidence scoring
+       - Medication recommendations
+
+     /api/medical-history (GET, POST, PUT)
+       - Patient record management
+       - Medical history updates
+       - Allergy and condition tracking
+
+     /api/prescriptions (GET, POST, PUT)
+       - Prescription creation and management
+       - Status updates
+       - Approval workflow
+       - Dispensing management
+
+     /api/inventory (GET, POST, PUT)
+       - Stock management
+       - Transaction logging
+       - Low stock alerts
+       - Expiry monitoring
+
+     /api/users (GET, POST, PUT)
+       - User management
+       - Role assignment
+       - Profile updates
+       - Authentication
+     ```
+
+   - Authentication & Authorization:
+
+     - JWT-based token authentication
+     - Role-based access control
+     - Permission-based endpoint access
+     - Session validation
+     - Token refresh mechanism
+
+   - Request Processing:
+     - Input validation
+     - Data sanitization
+     - Error handling
+     - Response formatting
+     - Rate limiting
+     - Request logging
+
+4. **Database Layer**
+
+   - MySQL 8.0+ Database:
+
+     - InnoDB engine for transaction support
+     - UTF-8 character encoding
+     - Optimized indexes for frequent queries
+     - Foreign key constraints for data integrity
+
+   - Connection Management:
+
+     - Connection pooling (20 connections)
+     - Automatic reconnection
+     - Connection health monitoring
+     - Deadlock detection
+     - Query timeout handling
+
+   - Transaction Management:
+
+     - ACID compliance
+     - Transaction isolation levels
+     - Deadlock prevention
+     - Rollback support
+     - Savepoint management
+
+   - Security:
+     - Prepared statements
+     - Input parameterization
+     - SQL injection prevention
+     - Access control
+     - Audit logging
+
+5. **AI/ML Components**
+
+   - Disease Prediction System:
+
+     - Symptom analysis using NLP
+     - Disease probability scoring
+     - Confidence threshold filtering (MIN_DISEASE_CONFIDENCE = 0.1)
+     - Top-N disease selection (TOP_N_DISEASES = 3)
+     - Historical pattern recognition
+
+   - Medication Recommendation:
+
+     - Drug compatibility checking
+     - Dosage optimization
+     - Allergy consideration
+     - Drug interaction prevention
+     - Generic alternatives suggestion
+
+   - Natural Language Processing:
+     - Symptom extraction from text
+     - Synonym matching
+     - Severity classification
+     - Context understanding
+     - Medical terminology processing
+
+### Data Processing Pipeline
+
+The system processes several types of data (from data_processing.py):
+
+1. **Symptom-Disease Data** (`backend/data_processing.py`, `backend/data_cleaning.py`)
+
+   - Source: `data.csv` in raw data directory
+   - Processing Steps:
+
+     1. Data Loading and Initial Cleaning:
+
+        - Column name standardization
+        - First column renamed to 'disease'
+        - Duplicate row removal
+        - Missing value handling
+
+     2. Disease Label Validation:
+
+        - Length validation (3-50 characters)
+        - Alphabetic character requirement
+        - Exclusion of generic instructions/warnings
+        - Removal of invalid disease labels
+        - Filtering of rare classes (< 5 samples)
+
+     3. Feature Engineering:
+
+        - Binary symptom encoding
+        - Symptom column identification
+        - Label encoding for diseases
+        - Feature importance analysis
+
+     4. Data Standardization:
+
+        - Text cleaning (lowercase, special characters)
+        - Medical terminology normalization
+        - Synonym mapping using `symptom_synonyms`
+        - Compound symptom handling (e.g., "sharp pain" → "abdominal pain")
+
+     5. Output Generation:
+        - Processed data saved to `symptom_disease_mapping.csv`
+        - Training dataset creation
+        - Feature names and label names preservation
+        - Model-ready format conversion
+
+2. **Drug Information Data** (`backend/data_processing.py`)
+
+   - Sources:
+     - FDA Drug Labels (`drug_labels.json`)
+     - FDA Drug Events (`drug_events.json`)
+   - Processing Steps:
+
+     1. Data Extraction:
+
+        - Brand name extraction
+        - Generic name extraction
+        - Indications processing
+        - Warnings processing
+        - Dosage information
+
+     2. Data Integration:
+
+        - Drug-disease mapping creation
+        - Adverse event association
+        - Indication standardization
+
+     3. Output Generation:
+        - Processed data saved to `drug_info.csv`
+        - Training dataset integration
+
+3. **Training Dataset Creation** (`backend/data_processing.py`)
+   - Combines processed symptom-disease and drug data
+   - Creates final training dataset with:
+     - Disease-symptom relationships
+     - Drug-disease mappings
+     - Medication information
+   - Output: `training_dataset.csv`
+
+### Model Architecture
+
+1. **Disease Prediction Model** (`backend/train_model.py`)
+
+   - Algorithm: XGBoost Classifier
+   - Implementation Details:
+     - Binary symptom features
+     - Multi-class disease prediction
+     - Early stopping (10 rounds)
+     - Evaluation metric: mlogloss
+   - Hyperparameter Tuning:
+     - Grid search with 3-fold cross-validation
+     - Parameters tuned:
+       - n_estimators: [100, 200]
+       - max_depth: [3, 5]
+       - learning_rate: 0.1
+       - subsample: [0.8, 1.0]
+       - colsample_bytree: [0.8, 1.0]
+       - min_child_weight: [1, 3]
+
+2. **Natural Language Processing** (`backend/test_model.py`)
+   - Symptom Extraction:
+     - Text preprocessing
+     - Compound symptom handling (e.g., "sharp pain" → "abdominal pain")
+     - Negation detection
+     - Synonym mapping
+   - Model: spaCy (en_core_web_sm)
+
+### Model Training and Evaluation
+
+1. **Training Process** (`backend/train_model.py`)
+
+   - Data splitting: 80% training, 20% testing
+   - Cross-validation: 3-fold
+   - Early stopping with validation set
+   - Model artifacts:
+
+     - Saved model: `backend/model/disease_predictor.pkl`
+     - Feature importance plot: `backend/model/feature_importance.png`
+     - Confusion matrix: `backend/model/confusion_matrix.png`
+
+     ![alt text](./backend/model/feature_importance.png)
+
+     ![alt text](./backend/model/confusion_matrix.png)
+
+2. **Evaluation Metrics** (`backend/run_tests.py`, `backend/train_model.py`)
+   - Accuracy score
+   - Classification report (precision, recall, F1-score)
+   - Confusion matrix analysis
+   - Cross-validation scores
+   - Symptom detection metrics:
+     - Precision
+     - Recall
+     - F1-score
+
+### Model Deployment
+
+1. **Model Storage** (`backend/train_model.py`)
+
+   - Format: joblib
+   - Location: `backend/model/disease_predictor.pkl`
+   - Stored components:
+     - Trained XGBoost model
+     - Feature names
+     - Label names
+     - Best parameters
+
+2. **Inference Pipeline** (`backend/test_model.py`)
+   - Text preprocessing
+   - Symptom extraction
+   - Feature vector creation
+   - Disease probability prediction
+   - Top-3 disease recommendations
+
+### Test Cases
+
+1. **Model Testing** (`backend/run_tests.py`, `backend/test_cases.py`)
+
+   - Standard symptom descriptions
+   - Negation test cases
+   - Casual language test cases
+   - Complex medical terminology
+   - Performance metrics tracking
+
+2. **Data Validation** (`backend/data_cleaning.py`)
+   - Text cleaning and standardization
+   - Medical terminology validation
+   - Data type verification
+   - Required field validation
+
+### Performance Monitoring
+
+1. **Model Metrics**
+
+   - Accuracy tracking
+   - False positive/negative analysis
+   - Confidence score distribution
+   - Feature importance changes
+
+2. **Test Cases**
+   - Standard symptom descriptions
+   - Negation handling
+   - Complex medical terminology
+   - Edge cases and rare conditions
+
+### Data Integrity
+
+1. **Input Validation**
+
+   - Symptom format checking
+   - Medical terminology validation
+   - Data type verification
+   - Required field validation
+
+2. **Output Validation**
+   - Probability score verification
+   - Disease name validation
+   - Confidence threshold enforcement
+   - Result consistency checks
 
 ### Frontend Architecture
 
-- **Component Layer**: React components with Ant Design
-- **State Management**: React Hooks and Context API
-- **Routing**: React Router for SPA navigation
-- **API Integration**: Axios for HTTP requests
-- **Styling**: Tailwind CSS for responsive design
+1. **Application Framework**
 
-### AI/ML Pipeline
+   - React.js 18.2.0:
 
-1. Symptom Input Processing
-2. Natural Language Understanding
-3. Disease Prediction
-4. Medication Recommendation
-5. Drug Interaction Check
-6. Confidence Scoring
+     - Functional components with hooks
+     - Custom hooks for business logic
+     - Error boundaries for fault tolerance
+     - Lazy loading for performance
+     - Code splitting for optimization
+
+   - Routing:
+
+     - React Router 6.8.0
+     - Protected routes
+     - Role-based access
+     - Route guards
+     - History management
+
+   - State Management:
+     - React Context API
+     - Custom hooks for state logic
+     - Local state with useState
+     - Global state with useContext
+     - Form state management
+
+2. **UI Components**
+
+   - Ant Design 5.25.4:
+
+     - Custom theme configuration
+     - Responsive grid system
+     - Form components
+     - Data display components
+     - Navigation components
+
+   - Custom Components:
+
+     - PrescriptionForm
+     - PatientRecord
+     - InventoryDashboard
+     - UserManagement
+     - HelpSupport
+
+   - Styling:
+     - Tailwind CSS 3.3.2
+     - Custom utility classes
+     - Responsive design
+     - Dark mode support
+     - Component-specific styles
+
+3. **State Management**
+
+   - Local State:
+
+     - useState for component state
+     - useReducer for complex state
+     - Custom hooks for reusable logic
+
+   - Global State:
+
+     - Context API for app-wide state
+     - User session management
+     - Theme preferences
+     - Application settings
+
+   - Form State:
+     - Controlled components
+     - Form validation
+     - Error handling
+     - Submission management
+
+4. **API Integration**
+
+   - Axios Configuration:
+
+     - Base URL configuration
+     - Request/response interceptors
+     - Error handling
+     - Retry logic
+     - Request cancellation
+
+   - Authentication:
+
+     - Token management
+     - Session handling
+     - Refresh token logic
+     - Logout handling
+
+   - Error Handling:
+     - Global error boundary
+     - API error mapping
+     - User-friendly error messages
+     - Error logging
+     - Recovery procedures
+
+5. **Security Features**
+
+   - CSRF Protection:
+
+     - Token validation
+     - Request verification
+     - Double submit cookie pattern
+
+   - XSS Prevention:
+
+     - Input sanitization
+     - Output encoding
+     - CSP headers
+     - Secure cookie handling
+
+   - Authentication:
+     - Secure session management
+     - Token-based authentication
+     - Role-based access control
+     - Permission checking
+
+### Data Flow Architecture
+
+The system implements a sophisticated data flow architecture that ensures secure, efficient, and reliable data processing across all components. Each flow is designed with error handling, validation, and audit logging.
+
+#### 1. Authentication & Authorization Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Frontend   │     │   Backend   │     │  Database   │     │   Session   │
+│  (React)    │     │   (Flask)   │     │  (MySQL)    │     │  Manager    │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │                   │
+       │  Login Request    │                   │                   │
+       │─────────────────>│                   │                   │
+       │                   │                   │                   │
+       │                   │  Validate User    │                   │
+       │                   │─────────────────>│                   │
+       │                   │                   │                   │
+       │                   │  User Data        │                   │
+       │                   │<─────────────────│                   │
+       │                   │                   │                   │
+       │                   │  Create Session   │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │  Session Token    │                   │                   │
+       │<─────────────────│                   │                   │
+       │                   │                   │                   │
+       │  Protected        │                   │                   │
+       │  Route Access     │                   │                   │
+       │─────────────────>│                   │                   │
+       │                   │  Verify Session   │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │  Access Granted   │                   │                   │
+       │<─────────────────│                   │                   │
+       │                   │                   │                   │
+```
+
+**Flow Sequence:**
+
+1. **Frontend Initiation** (React)
+
+   - User submits login credentials through Ant Design Form
+   - Form validation with built-in Ant Design validation rules
+   - Password transmission (plain text, as seen in `app.py` login endpoint)
+   - Request headers:
+     - Content-Type: application/json
+     - Authorization: Bearer token (if available)
+   - CORS configuration:
+     - Origins: ['http://localhost:3000', 'http://127.0.0.1:3000']
+     - Methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+     - Max age: 600 seconds
+
+2. **Backend Processing** (Flask)
+
+   - Request validation middleware:
+     - Session validation via `@login_required` decorator
+     - Role-based access control using `ROLE_PERMISSIONS` mapping:
+       ```python
+       ROLE_PERMISSIONS = {
+           'admin': ['*'],
+           'pharmacist': ['view_inventory', 'edit_inventory', 'view_prescriptions', 'approve_prescriptions', 'view_analytics', 'view_patients'],
+           'doctor': ['view_inventory', 'view_prescriptions', 'create_prescriptions', 'approve_prescriptions', 'view_analytics', 'view_patients'],
+           'patient': ['view_prescriptions', 'view_own_profile', 'create_prescriptions'],
+           'system': ['view_inventory', 'view_prescriptions', 'create_prescriptions', 'approve_prescriptions', 'view_analytics', 'view_patients']
+       }
+       ```
+   - Password verification:
+     - Direct comparison with stored password (as seen in login endpoint)
+     - No failed attempt tracking implemented
+   - Session management:
+     - Secure cookie with HttpOnly flag
+     - Session lifetime: 24 hours (86400 seconds)
+     - Session refresh on each request
+     - Session cookie settings:
+       - Secure: True
+       - HttpOnly: True
+       - SameSite: 'None'
+   - Audit logging:
+     - Login attempts (success/failure)
+     - User ID and role logging
+     - Endpoint access logging
+
+3. **Database Operations** (MySQL)
+
+   - User authentication:
+     - Query: `SELECT * FROM users WHERE email = %s`
+     - Role verification against `users` table
+     - User data retrieval including:
+       - id (UUID)
+       - email
+       - password
+       - name
+       - role
+       - dob
+       - gender
+   - Session management:
+     - Session data stored in Flask session
+     - No explicit session table in database
+   - Security measures:
+     - Prepared statements for queries
+     - Connection pooling via DatabaseManager
+   - Audit trail:
+     - Basic logging of user actions
+     - No explicit audit table
+
+4. **Session Management**
+   - Session creation:
+     - Secure cookie with HttpOnly and Secure flags
+     - 24-hour session lifetime
+     - Automatic session refresh on activity
+   - Access control:
+     - Role-based permission checking via `@role_required` decorator
+     - Route protection via `@login_required`
+     - Permission checking via `@permission_required`
+   - Security features:
+     - Session invalidation on logout
+     - Cross-origin session handling
+     - CSRF protection via CORS settings
+
+**Data Validation:**
+
+- Input validation:
+  - Required fields checking
+  - Role validation against allowed roles
+  - Email format validation
+  - Date format validation (YYYY-MM-DD)
+- Role verification:
+  - Admin: Full system access
+  - Pharmacist: Inventory and prescription management
+  - Doctor: Prescription creation and patient management
+  - Patient: Personal data and prescription viewing
+- Session security:
+  - Token validation
+  - Role verification
+  - Permission checking
+
+#### 2. Prescription Management Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Frontend   │     │   Backend   │     │    AI/ML    │     │  Database   │
+│  (React)    │     │   (Flask)   │     │  Services   │     │  (MySQL)    │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │                   │
+       │  Symptom Input    │                   │                   │
+       │─────────────────>│                   │                   │
+       │                   │                   │                   │
+       │                   │  Process Symptoms │                   │
+       │                   │─────────────────>│                   │
+       │                   │                   │                   │
+       │                   │  Disease         │                   │
+       │                   │  Predictions     │                   │
+       │                   │<─────────────────│                   │
+       │                   │                   │                   │
+       │                   │  Check Drug      │                   │
+       │                   │  Interactions    │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │  Create          │                   │
+       │                   │  Prescription    │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │  Prescription     │                   │                   │
+       │  Status Update    │                   │                   │
+       │<─────────────────│                   │                   │
+       │                   │                   │                   │
+```
+
+**Flow Sequence:**
+
+1. **Symptom Processing**
+
+   - Natural Language Processing (NLP):
+     - Symptom extraction from text using custom NLP pipeline
+     - Synonym matching against medical terminology database
+     - Severity classification (mild, moderate, severe)
+     - Historical pattern analysis from patient records
+   - Confidence scoring:
+     - Minimum confidence threshold: 0.1 (MIN_DISEASE_CONFIDENCE)
+     - Top-N disease selection (N=3, TOP_N_DISEASES)
+   - Validation:
+     - Symptom existence verification
+     - Severity validation
+     - Pattern recognition
+
+2. **Disease Prediction**
+
+   - Multi-label classification:
+     - Disease prediction using DiseasePredictor class
+     - Confidence threshold filtering (≥ 0.1)
+     - Top 3 predictions selection
+   - Historical analysis:
+     - Patient medical history consideration
+     - Previous diagnoses weighting
+   - Validation:
+     - Disease existence verification
+     - Probability threshold checking
+     - Medical history correlation
+
+3. **Medication Recommendation**
+
+   - Drug compatibility:
+     - Patient allergy checking
+     - Current medication interaction verification
+     - Dosage optimization based on patient profile
+   - Cost consideration:
+     - Generic alternatives identification
+     - Price comparison
+   - Safety checks:
+     - Drug interaction prevention via MedicationRecommender
+     - Contraindication verification
+   - Validation:
+     - Medication availability check
+     - Dosage validation
+     - Interaction verification
+
+4. **Prescription Creation**
+   - Transaction management:
+     - ACID compliance via MySQL transactions
+     - Rollback support
+     - Concurrent access handling
+   - Status tracking:
+     - Workflow: pending → active → completed
+     - Status updates with timestamps
+     - Approval tracking
+   - Integration:
+     - Inventory level verification
+     - Patient record updating
+     - Notification system
+   - Audit trail:
+     - Prescription history
+     - Modification tracking
+     - Access logging
+
+**Data Processing:**
+
+- Real-time analysis:
+  - Symptom processing pipeline
+  - Disease prediction model
+  - Medication recommendation engine
+- Historical integration:
+  - Patient medical history
+  - Previous prescriptions
+  - Treatment outcomes
+- Validation:
+  - Drug interaction checking
+  - Prescription validation
+  - Inventory verification
+  - Patient eligibility
+
+#### 3. Inventory Management Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Frontend   │     │   Backend   │     │  Inventory  │     │  Database   │
+│  (React)    │     │   (Flask)   │     │  Manager    │     │  (MySQL)    │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │                   │
+       │  Stock Update     │                   │                   │
+       │─────────────────>│                   │                   │
+       │                   │                   │                   │
+       │                   │  Process Update   │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │  Update Stock     │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │  Check Levels     │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │  Generate Alerts  │                   │
+       │                   │<─────────────────────────────────────│
+       │  Alert Update     │                   │                   │
+       │<─────────────────│                   │                   │
+       │                   │                   │                   │
+```
+
+**Flow Sequence:**
+
+1. **Stock Management**
+
+   - Real-time tracking:
+     - Quantity monitoring via InventoryManager
+     - Batch tracking
+     - Expiry date management
+   - Transaction logging:
+     - Stock movement recording
+     - Batch number tracking
+     - Transaction history
+   - Validation:
+     - Stock level verification
+     - Batch validation
+     - Expiry checking
+   - Reconciliation:
+     - Daily stock counts
+     - Discrepancy detection
+     - Adjustment processing
+
+2. **Inventory Monitoring**
+
+   - Stock level management:
+     - Low stock detection
+     - Reorder point tracking
+     - Stock level analytics
+   - Expiry management:
+     - Date tracking
+     - Early warning system
+     - Disposal scheduling
+   - Analytics:
+     - Usage patterns
+     - Stock movement analysis
+     - Demand forecasting
+   - Alerts:
+     - Low stock notifications
+     - Expiry warnings
+     - Reorder reminders
+
+3. **Transaction Processing**
+   - ACID compliance:
+     - Transaction isolation
+     - Atomic operations
+     - Consistency maintenance
+   - Security:
+     - Role-based access control
+     - Audit logging
+     - Change tracking
+   - Validation:
+     - Stock availability
+     - Transaction integrity
+     - Data consistency
+   - Recovery:
+     - Rollback support
+     - Error handling
+     - State recovery
+
+**Data Operations:**
+
+- Stock management:
+  - Real-time updates via InventoryManager
+  - Batch processing
+  - Level tracking
+- Transaction handling:
+  - Movement recording
+  - History maintenance
+  - Audit trail
+- Analytics:
+  - Usage patterns
+  - Stock levels
+  - Movement trends
+- Optimization:
+  - Stock level optimization
+  - Reorder point calculation
+  - Demand forecasting
+
+#### 4. Patient Data Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Frontend   │     │   Backend   │     │  Patient    │     │  Database   │
+│  (React)    │     │   (Flask)   │     │  Manager    │     │  (MySQL)    │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │                   │
+       │  Patient Data     │                   │                   │
+       │  Request          │                   │                   │
+       │─────────────────>│                   │                   │
+       │                   │                   │                   │
+       │                   │  Validate Access  │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │  Fetch Records    │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │  Process Data     │                   │
+       │                   │<─────────────────────────────────────│
+       │                   │                   │                   │
+       │  Patient Data     │                   │                   │
+       │  Response         │                   │                   │
+       │<─────────────────│                   │                   │
+       │                   │                   │                   │
+```
+
+**Flow Sequence:**
+
+1. **Data Access Control**
+
+   - Role-based access:
+     - Admin: Full access
+     - Doctor: Patient records and prescriptions
+     - Pharmacist: Prescription and inventory
+     - Patient: Personal data only
+   - Security measures:
+     - Data encryption at rest
+     - Secure transmission (HTTPS)
+     - Access logging
+   - Privacy compliance:
+     - HIPAA compliance
+     - Data minimization
+     - Consent management
+   - Monitoring:
+     - Access pattern tracking
+     - Suspicious activity detection
+     - Audit trail maintenance
+
+2. **Data Processing**
+
+   - Medical history:
+     - Condition tracking via PatientHistoryManager
+     - Allergy management
+     - Prescription history
+   - Data aggregation:
+     - Patient demographics
+     - Treatment history
+     - Medication records
+   - Validation:
+     - Data integrity checks
+     - Format validation
+     - Consistency verification
+   - Normalization:
+     - Standard terminology
+     - Format standardization
+     - Data cleaning
+
+3. **Data Storage**
+   - Database structure:
+     - MySQL tables with proper indexing
+     - JSON fields for flexible data
+     - Relationship management
+   - Data management:
+     - Version control
+     - Backup procedures
+     - Archival policies
+   - Security:
+     - Encryption at rest
+     - Access control
+     - Audit logging
+   - Performance:
+     - Query optimization
+     - Index management
+     - Cache utilization
+
+**Data Security:**
+
+- Storage security:
+  - Encryption at rest
+  - Secure key management
+  - Access control
+- Transmission security:
+  - HTTPS encryption
+  - Certificate validation
+  - Secure protocols
+- Access control:
+  - Role-based permissions
+  - Session management
+  - Token validation
+- Privacy protection:
+  - Data masking
+  - Audit logging
+  - Consent management
+
+#### 5. Analytics & Reporting Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Frontend   │     │   Backend   │     │  Analytics  │     │  Database   │
+│  (React)    │     │   (Flask)   │     │  Engine     │     │  (MySQL)    │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │                   │
+       │  Report Request   │                   │                   │
+       │─────────────────>│                   │                   │
+       │                   │                   │                   │
+       │                   │  Query Data       │                   │
+       │                   │─────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │  Process Data     │                   │
+       │                   │─────────────────>│                   │
+       │                   │                   │                   │
+       │                   │  Generate Report  │                   │
+       │                   │<─────────────────│                   │
+       │                   │                   │                   │
+       │  Report Data      │                   │                   │
+       │<─────────────────│                   │                   │
+       │                   │                   │                   │
+```
+
+**Flow Sequence:**
+
+1. **Data Aggregation**
+
+   - Prescription analytics:
+     - Usage patterns
+     - Medication trends
+     - Prescription frequency
+   - Inventory analysis:
+     - Stock levels
+     - Movement patterns
+     - Reorder trends
+   - Patient statistics:
+     - Demographics
+     - Treatment patterns
+     - Health trends
+   - Custom analytics:
+     - User-defined metrics
+     - Custom reports
+     - Trend analysis
+
+2. **Report Generation**
+
+   - Data processing:
+     - Real-time aggregation
+     - Historical analysis
+     - Trend calculation
+   - Report types:
+     - Inventory reports
+     - Prescription analytics
+     - Patient statistics
+     - Custom reports
+   - Visualization:
+     - Interactive dashboards
+     - Data charts
+     - Trend graphs
+   - Export capabilities:
+     - PDF generation
+     - Excel export
+     - CSV download
+
+3. **Performance Optimization**
+   - Query optimization:
+     - Index utilization
+     - Query caching
+     - Execution planning
+   - Resource management:
+     - Connection pooling
+     - Memory optimization
+     - CPU utilization
+   - Caching strategy:
+     - Result caching
+     - Query caching
+     - Session caching
+   - Load balancing:
+     - Request distribution
+     - Resource allocation
+     - Performance monitoring
+
+**Data Processing:**
+
+- Analytics:
+  - Real-time processing
+  - Batch processing
+  - Stream processing
+- Reporting:
+  - Scheduled reports
+  - On-demand generation
+  - Custom templates
+- Monitoring:
+  - Performance metrics
+  - Resource utilization
+  - System health
+- Optimization:
+  - Query performance
+  - Resource usage
+  - Response time
+
+#### Implementation Details
+
+Each data flow implements:
+
+1. **Error Handling**
+
+   - Comprehensive error catching
+   - Graceful degradation
+   - Error logging
+   - Recovery procedures
+   - User notification
+   - System alerts
+
+2. **Transaction Management**
+
+   - ACID compliance
+   - Transaction isolation
+   - Deadlock prevention
+   - Rollback support
+   - Savepoint management
+   - Concurrent access control
+
+3. **Security Measures**
+
+   - Input validation
+   - Output sanitization
+   - Access control
+   - Audit logging
+   - Encryption
+   - Security headers
+
+4. **Performance Optimization**
+
+   - Query optimization
+   - Connection pooling
+   - Caching strategies
+   - Resource management
+   - Load balancing
+   - Response optimization
+
+5. **Monitoring & Logging**
+
+   - Request tracking
+   - Performance metrics
+   - Error logging
+   - Audit trails
+   - System health
+   - Usage statistics
+
+6. **Data Integrity**
+
+   - Validation rules
+   - Consistency checks
+   - Data sanitization
+   - Version control
+   - Backup procedures
+   - Recovery plans
+
+7. **Scalability Features**
+
+   - Connection pooling
+   - Load balancing
+   - Resource optimization
+   - Caching strategies
+   - Query optimization
+   - Horizontal scaling
+
+8. **Compliance & Governance**
+   - Data privacy
+   - Audit trails
+   - Access control
+   - Data retention
+   - Regulatory compliance
+   - Security standards
 
 ## Tech Stack
 
 ### Backend
 
-- **Framework**: Flask 2.3.3
-- **Database**: MySQL 8.0+
-- **AI/ML Libraries**:
-  - TensorFlow 2.8.0+
-  - PyTorch 1.10.0+
-  - scikit-learn 0.24.2+
-  - spaCy 3.1.0+
-  - Transformers 4.15.0+
-- **Authentication**: Flask-Session, JWT
-- **API**: RESTful with Flask-RESTful
-- **Database ORM**: SQLAlchemy 2.0.21
-- **Testing**: pytest, pytest-cov
+1. **Core Framework**
+
+   - Flask 2.3.3
+     - Flask-RESTful 0.3.10 for API development
+     - Flask-SQLAlchemy 3.1.1 for ORM
+     - Flask-CORS 4.0.0 for cross-origin support
+     - Flask-JWT-Extended 4.5.3 for authentication
+
+2. **Database**
+
+   - MySQL 8.0+
+     - mysqlclient 2.2.0 for Python connectivity
+     - SQLAlchemy 2.0.21 for ORM
+     - Alembic 1.12.0 for migrations
+
+3. **AI/ML Stack**
+
+   - Core Libraries:
+     - TensorFlow 2.8.0+ for deep learning
+     - PyTorch 1.10.0+ for neural networks
+     - scikit-learn 0.24.2+ for machine learning
+   - NLP Components:
+     - spaCy 3.1.0+ for natural language processing
+     - Transformers 4.15.0+ for advanced NLP
+     - NLTK 3.6.2+ for text processing
+   - Data Processing:
+     - pandas 1.3.0+ for data manipulation
+     - numpy 1.21.0+ for numerical operations
+     - matplotlib 3.5.0+ for visualization
+
+4. **Testing & Development**
+
+   - Testing:
+     - pytest for integration testing
+     - Custom test cases for disease prediction
+     - Custom test runner for model evaluation
+     - Manual API testing scripts
+   - Code Quality:
+     - black 21.7b0+ for code formatting
+     - flake8 3.9.2+ for linting
+     - mypy 0.910+ for type checking
+   - Documentation:
+     - Sphinx 7.2.6+ for documentation
+     - sphinx-rtd-theme 1.3.0+ for documentation styling
+
+5. **Security**
+   - Authentication:
+     - bcrypt 4.0.1+ for password hashing
+     - PyJWT 2.8.0+ for JWT tokens
+   - Encryption:
+     - cryptography 3.4.7+ for encryption
+   - Utilities:
+     - python-dateutil 2.8.2+ for date handling
+     - requests 2.31.0+ for HTTP requests
 
 ### Frontend
 
-- **Framework**: React.js 18.2.0
-- **UI Library**: Ant Design 5.25.4
-- **State Management**: React Hooks
-- **HTTP Client**: Axios 1.9.0
-- **Routing**: React Router 6.8.0
-- **Styling**: Tailwind CSS 3.3.2
+1. **Core Framework**
+
+   - React.js 18.2.0
+     - React Router 6.8.0 for routing
+     - React Icons 5.5.0 for UI icons
+     - React Scripts 5.0.1 for build tools
+
+2. **UI Components**
+
+   - Ant Design 5.25.4
+     - Custom theme configuration
+     - Responsive grid system
+     - Form components
+     - Data display components
+     - Navigation components
+   - Styling:
+     - Tailwind CSS 3.3.2
+     - PostCSS 8.4.24
+     - Autoprefixer 10.4.14
+
+3. **State Management**
+
+   - React Hooks for local state
+   - Context API for global state
+   - Custom hooks for business logic
+
+4. **API Integration**
+
+   - Axios 1.9.0 for HTTP requests
+   - Date-fns 4.1.0 for date manipulation
+
+5. **Development Tools**
+   - Build Tools:
+     - Web Vitals 2.1.4 for performance monitoring
+     - React Scripts for development environment
+   - Testing Tools:
+     - React Testing Library (included but not actively used)
+     - Jest (included but not actively used)
+
+### Development Environment
+
+1. **Version Control**
+
+   - Git for source control
+   - GitHub for repository hosting
+
+2. **Development Tools**
+
+   - Visual Studio Code (recommended IDE)
+   - Chrome/Firefox/Safari (latest versions) for development
+   - Node.js 14.x+ for frontend development
+   - Python 3.8+ for backend development
+
+3. **Hardware Requirements**
+
+   - Processor: Multi-core 2.5GHz+ (required for AI computations)
+   - RAM: 8GB+ (minimum for running AI models and concurrent users)
+   - Storage: 1TB SSD (for datasets, models, and application data)
+   - Network: Gigabit (1000 Mbps) for optimal performance
+   - Display: 1920x1080 (Full HD) minimum resolution
+
+4. **Operating System**
+   - macOS (tested on 24.5.0)
+   - Windows 10 or higher
+   - Linux (Ubuntu 20.04+ recommended)
+
+## Data Structure
+
+The system uses a MySQL database with the following key tables and relationships:
+
+### Core Tables
+
+1. **Users**
+
+   - Primary user information storage
+   - Fields: id, name, email, password, dob, gender, role (patient/doctor/pharmacist/admin)
+   - Serves as the central table for user authentication and role management
+
+2. **Patient Medical History**
+
+   - Stores patient-specific medical information
+   - Fields: patient_id, email, allergies (JSON), conditions (JSON)
+   - Links to users table for patient identification
+   - Stores allergies and conditions as JSON for flexible data structure
+
+3. **Symptom History**
+
+   - Tracks patient symptoms over time
+   - Fields: patient_id, symptoms, severity (mild/moderate/severe), notes
+   - Maintains historical record of patient symptoms for AI analysis
+
+4. **Medications**
+   - Master list of available medications
+   - Fields: name, generic_name, description, dosage, frequency, price, unit, expiry_date
+   - Includes inventory management fields (reorder_point, category)
+
+### Prescription Management
+
+1. **Prescriptions**
+
+   - Core prescription management
+   - Fields: patient_id, medication_id, prescribed_by, dosage, frequency, status
+   - Tracks prescription lifecycle (pending → active → completed/cancelled)
+   - Includes approval workflow (approved_by, approved_at, dispensed_at)
+
+2. **Inventory**
+
+   - Real-time medication stock tracking
+   - Fields: medication_id, quantity, last_restocked_at
+   - Links to medications table for stock management
+
+3. **Inventory Transactions**
+   - Audit trail for inventory changes
+   - Fields: inventory_id, transaction_type (restock/dispense), quantity, notes
+   - Maintains history of all stock movements
+
+### Key Relationships
+
+1. **User Relationships**
+
+   - Users (1) → Patient Medical History (1)
+     - One-to-one relationship with `patient_id` and `email` foreign keys
+     - Medical history includes allergies and conditions stored as JSON
+   - Users (1) → Symptom History (many)
+     - One-to-many relationship with `patient_id` foreign key
+     - Tracks symptom severity and recording timestamps
+   - Users (1) → Prescriptions (many)
+     - One-to-many relationship for patients receiving prescriptions
+     - One-to-many relationship for doctors prescribing medications
+     - Includes `prescribed_by` and `approved_by` foreign keys
+
+2. **Medication Relationships**
+
+   - Medications (1) → Prescriptions (many)
+     - One-to-many relationship with `medication_id` foreign key
+     - Links prescriptions to specific medications
+   - Medications (1) → Inventory (1)
+     - One-to-one relationship with `medication_id` foreign key
+     - Tracks stock levels and last restock date
+
+3. **Inventory Relationships**
+
+   - Inventory (1) → Inventory Transactions (many)
+     - One-to-many relationship with `inventory_id` foreign key
+     - Records all stock movements (restock/dispense)
+     - Maintains audit trail with timestamps
+
+4. **Prescription Relationships**
+
+   - Prescriptions (1) → Cart Items (many)
+     - One-to-many relationship with `prescription_id` foreign key
+     - Links prescriptions to user shopping carts
+   - Prescriptions (1) → Purchase Items (many)
+     - One-to-many relationship with `prescription_id` foreign key
+     - Records prescription items in completed purchases
+
+5. **Purchase Relationships**
+   - Users (1) → Purchases (many)
+     - One-to-many relationship with `user_id` foreign key
+     - Tracks purchase status and completion timestamps
+   - Purchases (1) → Purchase Items (many)
+     - One-to-many relationship with `purchase_id` foreign key
+     - Records individual items in each purchase
+
+### Data Integrity
+
+1. **Referential Integrity**
+
+   - Foreign key constraints enforce relationships between tables
+   - Cascading deletes for dependent records (e.g., patient deletion removes medical history)
+   - Null constraints on required fields (e.g., medication names, prescription dosages)
+   - Unique constraints on critical fields (e.g., user emails, medication names)
+
+2. **Data Validation**
+
+   - Input sanitization for all user inputs
+   - JSON validation for medical history fields (allergies, conditions)
+   - Enum constraints for status fields:
+     - User roles: 'patient', 'doctor', 'pharmacist', 'admin'
+     - Prescription status: 'pending', 'active', 'completed', 'cancelled', 'approved'
+     - Transaction types: 'restock', 'dispense'
+     - Purchase status: 'pending', 'completed', 'cancelled'
+
+3. **Data Consistency**
+
+   - Timestamps for all records (created_at, updated_at)
+   - Audit trails for inventory transactions
+   - Version tracking for prescription modifications
+   - Status tracking for all business processes
+
+4. **Performance Optimization**
+
+   - Indexed fields for frequent queries:
+     - User lookups (email, role)
+     - Prescription searches (patient_id, status)
+     - Inventory tracking (medication_id)
+     - Cart and purchase operations (user_id, status)
+   - Optimized joins for common queries
+   - Efficient JSON storage for flexible data
+
+5. **Security Measures**
+
+   - Password hashing for user authentication
+   - Role-based access control
+   - Session management with secure cookies
+   - Input validation and sanitization
+   - SQL injection prevention
+   - XSS protection
+
+6. **Error Handling**
+
+   - Transaction management for atomic operations
+   - Rollback support for failed operations
+   - Detailed error logging
+   - Graceful failure handling
+   - Data recovery procedures
+
+7. **Compliance & Standards**
+   - HIPAA-compliant data storage
+   - GDPR data protection measures
+   - Audit logging for sensitive operations
+   - Data retention policies
+   - Privacy-focused data access controls
 
 ## Prerequisites
 
-### Hardware Requirements
+### System Requirements
 
-- Processor: Multi-core processor with minimum 2.5GHz speed
-- RAM: 8GB RAM or higher (recommended for AI computations)
-- Storage: 1TB SSD (for datasets and application data)
-- Network: Gigabit network card (1000 Mbps)
+1. **Hardware Requirements**
 
-### Software Requirements
+   - Processor: Multi-core 2.5GHz+ (required for AI computations)
+   - RAM: 8GB+ (minimum for running AI models and concurrent users)
+   - Storage: 1TB SSD (for datasets, models, and application data)
+   - Network: Gigabit (1000 Mbps) for optimal performance
+   - Display: 1920x1080 (Full HD) minimum resolution
 
-- **Operating System**:
-  - macOS (tested on 24.5.0)
-  - Windows 10 or higher
-  - Linux (Ubuntu 20.04+ recommended)
-- **Python**: 3.8 or higher
-- **Node.js**: 14.x or higher
-- **MySQL**: 8.0 or higher
-- **Web Browser**: Chrome, Firefox, or Edge (latest version)
+2. **Operating System**
+   - macOS (tested on 24.5.0)
+   - Windows 10 or higher
+   - Linux (Ubuntu 20.04+ recommended)
+
+### Development Environment
+
+1. **Backend Requirements**
+
+   - Python 3.8+
+   - MySQL 8.0+
+   - Required Python Packages:
+     - Flask 2.3.3 (Web Framework)
+     - Flask-RESTful 0.3.10 (API Development)
+     - Flask-SQLAlchemy 3.1.1 (ORM)
+     - Flask-CORS 4.0.0 (Cross-Origin Support)
+     - Flask-JWT-Extended 4.5.3 (Authentication)
+     - mysqlclient 2.2.0 (Database Connector)
+     - python-dotenv 1.0.0 (Environment Management)
+     - bcrypt 4.0.1 (Password Hashing)
+     - PyJWT 2.8.0 (JWT Tokens)
+     - cryptography 3.4.7+ (Encryption)
+     - pytest 6.2.5+ (Testing)
+
+2. **Frontend Requirements**
+
+   - Node.js 14.x+
+   - Required npm Packages:
+     - React 18.2.0 (Core Framework)
+     - React Router 6.8.0 (Routing)
+     - Ant Design 5.25.4 (UI Components)
+     - Axios 1.9.0 (HTTP Client)
+     - Tailwind CSS 3.3.2 (Styling)
+     - date-fns 4.1.0 (Date Utilities)
+
+3. **AI/ML Requirements**
+
+   - TensorFlow 2.8.0+ (Deep Learning)
+   - PyTorch 1.10.0+ (Neural Networks)
+   - scikit-learn 0.24.2+ (Machine Learning)
+   - pandas 1.3.0+ (Data Processing)
+   - numpy 1.21.0+ (Numerical Operations)
+   - transformers 4.15.0+ (NLP)
+   - spaCy 3.1.0+ (NLP)
+   - NLTK 3.6.2+ (Text Processing)
+
+4. **Development Tools**
+   - Git (Version Control)
+   - Visual Studio Code (Recommended IDE)
+   - Chrome/Firefox/Safari (Latest versions)
+   - MySQL Workbench (Database Management)
+   - Postman/Insomnia (API Testing)
+
+### Environment Setup
+
+1. **Required Environment Variables**
+
+   ```
+   # Backend (.env)
+   FLASK_APP=app.py
+   FLASK_ENV=development
+   FLASK_DEBUG=1
+   FLASK_SECRET_KEY=your-secret-key
+   MYSQL_DATABASE_HOST=localhost
+   MYSQL_DATABASE_USER=your-db-user
+   MYSQL_DATABASE_PASSWORD=your-db-password
+   MYSQL_DATABASE_DB=medicine_prescription_system
+   MYSQL_DATABASE_PORT=3306
+   JWT_SECRET_KEY=your-jwt-secret-key
+   SESSION_COOKIE_SECURE=True
+   SESSION_COOKIE_HTTPONLY=True
+   CORS_ORIGINS=http://localhost:3000
+
+   # Frontend (.env)
+   REACT_APP_API_URL=http://localhost:5001
+   REACT_APP_ENV=development
+   ```
+
+2. **Database Configuration**
+   - MySQL 8.0+ with InnoDB engine
+   - UTF-8 character encoding
+   - Connection pooling (20 connections)
+   - Required database: medicine_prescription_system
 
 ## Installation
 
@@ -169,7 +1635,6 @@ cd tabitha-project
 2. **Set Up Backend**
 
 ```bash
-
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -184,49 +1649,7 @@ cd frontend
 npm install
 ```
 
-4. **Configure Environment Variables**
-
-Create `.env` file in the backend directory:
-
-```env
-# Flask Configuration
-FLASK_APP=app.py
-FLASK_ENV=development
-FLASK_DEBUG=1
-FLASK_SECRET_KEY=your-secret-key-here
-
-# Database Configuration
-MYSQL_DATABASE_HOST=localhost
-MYSQL_DATABASE_USER=your-db-user
-MYSQL_DATABASE_PASSWORD=your-db-password
-MYSQL_DATABASE_DB=medicine_prescription_system
-MYSQL_DATABASE_PORT=3306
-
-# AI Model Configuration
-MODEL_PATH=data/processed/disease_predictor.pkl
-DATA_DIR=data/processed
-
-# Security Configuration
-JWT_SECRET_KEY=your-jwt-secret-key
-SESSION_COOKIE_SECURE=True
-SESSION_COOKIE_HTTPONLY=True
-CORS_ORIGINS=http://localhost:3000
-
-# Logging Configuration
-LOG_LEVEL=INFO
-LOG_FILE=logs/app.log
-```
-
-Create `.env` file in the frontend directory:
-
-```env
-REACT_APP_API_URL=http://localhost:5001
-REACT_APP_ENV=development
-REACT_APP_VERSION=$npm_package_version
-REACT_APP_SENTRY_DSN=your-sentry-dsn
-```
-
-5. **Initialize Database**
+4. **Initialize Database**
 
 ```bash
 # Login to MySQL
@@ -251,22 +1674,19 @@ python create_test_users.py
 
 1. **Start Backend Server**
 
-```bash
-cd backend
-python app.py
-```
+   ```bash
+   cd backend
+   python app.py
+   ```
+
+   The backend API will be available at http://localhost:5001
 
 2. **Start Frontend Development Server**
-
-```bash
-cd frontend
-npm start
-```
-
-The application will be available at:
-
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5001
+   ```bash
+   cd frontend
+   npm start
+   ```
+   The frontend application will be available at http://localhost:3000
 
 ## Database Schema
 
@@ -282,22 +1702,6 @@ The application uses the following main tables:
 
 For detailed schema information, see `backend/schema.sql`.
 
-## Testing
-
-### Backend Tests
-
-```bash
-cd backend
-pytest
-```
-
-### Frontend Tests
-
-```bash
-cd frontend
-npm test
-```
-
 ## Security Features
 
 - Secure session management with HTTP-only cookies
@@ -307,55 +1711,6 @@ npm test
 - SQL injection prevention
 - XSS protection
 - CSRF protection
-
-## Deployment
-
-### Production Deployment
-
-1. **Backend Deployment**
-
-```bash
-# Build the application
-cd backend
-python setup.py build
-
-# Set up production environment
-python -m venv venv_prod
-source venv_prod/bin/activate
-pip install -r requirements.txt
-pip install gunicorn
-
-# Configure Gunicorn
-gunicorn -w 4 -b 0.0.0.0:5001 "app:create_app()"
-```
-
-2. **Frontend Deployment**
-
-```bash
-# Build the React application
-cd frontend
-npm run build
-
-# Serve with Nginx
-sudo cp build/* /var/www/html/
-```
-
-3. **Database Setup**
-
-```bash
-# Create production database
-mysql -u root -p
-CREATE DATABASE medicine_prescription_system_prod;
-USE medicine_prescription_system_prod;
-source backend/schema.sql
-```
-
-### Docker Deployment
-
-```bash
-# Build and run with Docker Compose
-docker-compose -f docker-compose.prod.yml up -d
-```
 
 ## Troubleshooting
 
@@ -374,53 +1729,9 @@ docker-compose -f docker-compose.prod.yml up -d
    - Check session configuration
 
 3. **AI Model Issues**
-
-   - Verify model files exist in data/processed
+   - Verify model files exist in data/processed directory
    - Check model version compatibility
    - Ensure sufficient system resources
-
-4. **Frontend Build Issues**
-   - Clear node_modules and reinstall
-   - Update npm packages
-   - Check for port conflicts
-
-### Logging
-
-- Backend logs: `backend/logs/app.log`
-- Frontend logs: Browser console
-- Database logs: MySQL error log
-- System logs: System journal
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Install development dependencies:
-   ```bash
-   pip install -r requirements-dev.txt
-   npm install --save-dev
-   ```
-4. Run tests:
-
-   ```bash
-   # Backend tests
-   pytest
-
-   # Frontend tests
-   npm test
-   ```
-
-5. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-6. Push to the branch (`git push origin feature/AmazingFeature`)
-7. Open a Pull Request
-
-### Development Guidelines
-
-- Follow PEP 8 for Python code
-- Use ESLint for JavaScript/TypeScript
-- Write unit tests for new features
-- Update documentation
-- Follow conventional commits
 
 ## License
 
@@ -438,7 +1749,7 @@ For support, please contact the development team or open an issue in the reposit
 - Tabitha AI Assistant for intelligent healthcare support
 - Contributors and maintainers of all open-source libraries used
 - Healthcare professionals who provided domain expertise
-- Uzur Chem Pharmacy staff for their valuable feedback and support
+- Uzuri Chem Pharmacy staff for their valuable feedback and support
 - Project Supervisor Don. Dennis Njagi for guidance and direction
 
 # medicine-prescription-system
@@ -554,175 +1865,78 @@ The system uses a MySQL database with the following tables (from schema.sql):
 
 The system processes several types of data (from data_processing.py):
 
-1. **Symptom-Disease Data**
+1. **Symptom-Disease Data** (`backend/data_processing.py`, `backend/data_cleaning.py`)
 
-   - Source: data.csv in data/raw directory
-   - Processing:
-     - Column name cleaning
-     - Duplicate removal
-     - Output: symptom_disease_mapping.csv
+   - Source: `data.csv` in raw data directory
+   - Processing Steps:
 
-2. **Drug Data**
+     1. Data Loading and Initial Cleaning:
+
+        - Column name standardization
+        - First column renamed to 'disease'
+        - Duplicate row removal
+        - Missing value handling
+
+     2. Disease Label Validation:
+
+        - Length validation (3-50 characters)
+        - Alphabetic character requirement
+        - Exclusion of generic instructions/warnings
+        - Removal of invalid disease labels
+        - Filtering of rare classes (< 5 samples)
+
+     3. Feature Engineering:
+
+        - Binary symptom encoding
+        - Symptom column identification
+        - Label encoding for diseases
+        - Feature importance analysis
+
+     4. Data Standardization:
+
+        - Text cleaning (lowercase, special characters)
+        - Medical terminology normalization
+        - Synonym mapping using `symptom_synonyms`
+        - Compound symptom handling (e.g., "sharp pain" → "abdominal pain")
+
+     5. Output Generation:
+        - Processed data saved to `symptom_disease_mapping.csv`
+        - Training dataset creation
+        - Feature names and label names preservation
+        - Model-ready format conversion
+
+2. **Drug Information Data** (`backend/data_processing.py`)
 
    - Sources:
-     - drug_labels.json (FDA drug labels)
-     - drug_events.json (FDA adverse events)
-   - Processed fields:
-     - brand_name
-     - generic_name
-     - indications
-     - warnings
-     - dosage
-     - adverse_reactions
-   - Output: drug_info.csv
+     - FDA Drug Labels (`drug_labels.json`)
+     - FDA Drug Events (`drug_events.json`)
+   - Processing Steps:
 
-3. **Training Dataset**
-   - Created by combining:
-     - Processed symptom-disease mappings
-     - Processed drug information
-   - Output: training_dataset.csv
-   - Location: data/processed directory
+     1. Data Extraction:
 
-#### Data Flow
+        - Brand name extraction
+        - Generic name extraction
+        - Indications processing
+        - Warnings processing
+        - Dosage information
 
-1. **Raw Data Collection**
+     2. Data Integration:
 
-   - FDA drug databases
-   - Symptom-disease mappings
-   - Patient medical records
+        - Drug-disease mapping creation
+        - Adverse event association
+        - Indication standardization
 
-2. **Data Processing**
+     3. Output Generation:
+        - Processed data saved to `drug_info.csv`
+        - Training dataset integration
 
-   - Cleaning and normalization
-   - Feature extraction
-   - Dataset creation
-   - Validation and quality checks
-
-3. **Data Storage**
-
-   - Structured data in MySQL tables
-   - Processed datasets in CSV format
-   - JSON for flexible data (allergies, conditions)
-
-4. **Data Access**
-   - Role-based access control
-   - Secure API endpoints
-   - Data validation and sanitization
-
-### 4.3 Implementation Environment and Tools
-
-#### Development Environment
-
-- **Operating System**: macOS 24.5.0 (as evidenced by User-Agent in logs)
-- **Python Environment**: Virtual environment activated from root directory
-- **Database**: MySQL 8.0 (running on localhost:3306)
-- **Web Server**: Flask development server (running on localhost:5001)
-- **Frontend Server**: React development server (running on localhost:3000)
-
-#### Backend Implementation
-
-- **Framework**: Flask 2.3.3 with Flask-RESTful
-- **Database**: MySQL 8.0 with SQLAlchemy ORM
-- **Authentication**:
-  - JWT-based with Flask-Session
-  - Session management with secure cookies
-  - Role-based access control (evidenced by logs showing role checks)
-- **Logging**:
-  - Custom logging implementation
-  - Log levels: INFO, WARNING
-  - Log format includes timestamp, level, message
-  - Request/response logging with headers
-- **API Endpoints** (from logs):
-  - GET /api/patients
-  - GET /api/medical-history/{id}
-  - GET /api/user
-  - All endpoints return JSON responses
-  - Status codes: 200, 401, 403
-
-#### Frontend Implementation
-
-- **Framework**: React.js 18.2.0
-- **UI Library**: Ant Design 5.25.4
-- **State Management**: React Hooks
-- **HTTP Client**: Axios (evidenced by API calls)
-- **Routing**: React Router
-- **Styling**: Tailwind CSS 3.3.2
-
-### 4.4 Testing Strategy and Results
-
-#### Unit Testing
-
-- Backend test coverage tracked in .coverage file
-- Test cases implemented in test_cases.py (102 lines)
-- Patient records testing in test_patient_records.py (139 lines)
-- Medical records testing in test_medical_records.py (14 lines)
-- Test runner implementation in run_tests.py (165 lines)
-- Test results stored in test_results.json
-
-#### Integration Testing
-
-- API integration tests
-- Frontend-Backend communication tests
-- Database integration tests
-- Authentication flow testing
-- Session management testing
-
-#### Performance Testing
-
-- Load testing with concurrent users
-- Response time monitoring
-- Database query performance
-- Memory usage tracking
-- API endpoint performance
-
-#### Security Testing
-
-- Authentication bypass attempts
-- SQL injection prevention
-- XSS protection
-- CSRF protection
-- Session management
-- Data encryption
-
-### 4.5 Conclusions
-
-#### Achievements
-
-1. Successfully implemented AI-powered prescription system
-2. Achieved target performance metrics
-3. Met security requirements
-4. Implemented all core features
-5. Established reliable backup and recovery
-
-#### Limitations
-
-1. AI model accuracy dependent on training data quality
-2. System performance affected by network conditions
-3. Limited to English language support
-4. Requires stable internet connection
-5. Initial training period needed for staff
-
-### 4.6 Recommendations
-
-1. **Short-term Improvements**
-
-   - Enhance AI model training data
-   - Implement offline mode
-   - Add multi-language support
-   - Improve mobile responsiveness
-
-2. **Long-term Enhancements**
-
-   - Integration with national health systems
-   - Advanced analytics dashboard
-   - Mobile application development
-   - Extended AI capabilities
-
-3. **Operational Recommendations**
-   - Regular system backups
-   - Staff training programs
-   - Performance monitoring
-   - Security audits
+3. **Training Dataset Creation** (`backend/data_processing.py`)
+   - Combines processed symptom-disease and drug data
+   - Creates final training dataset with:
+     - Disease-symptom relationships
+     - Drug-disease mappings
+     - Medication information
+   - Output: `training_dataset.csv`
 
 ![alt text](image-23.png)
 
@@ -769,3 +1983,201 @@ The system processes several types of data (from data_processing.py):
 ![alt text](image-21.png)
 
 ![alt text](image-22.png)
+
+### Methodologies
+
+#### Software Development Life Cycle (SDLC)
+
+1. **Development Approach**
+
+   - Agile methodology with iterative development cycles
+   - Feature-driven development for core components
+   - Test-driven development for critical modules
+   - Version control using Git with feature branching
+
+2. **Testing Strategy**
+
+   - Unit Testing:
+     - pytest for backend components
+     - Custom test runner for model evaluation (`backend/run_tests.py`)
+     - Test cases for disease prediction (`backend/test_cases.py`)
+   - Integration Testing:
+     - API endpoint testing
+     - Component interaction testing (`tests/test_integration.py`)
+     - Prescription workflow testing
+   - Model Testing:
+     - Standard symptom descriptions
+     - Negation test cases
+     - Casual language test cases
+     - Complex medical terminology
+     - Performance metrics tracking
+
+3. **Code Quality**
+
+   - Code Style:
+     - PEP 8 compliance
+     - ESLint for frontend
+   - Documentation:
+     - Docstrings for Python functions
+     - README documentation
+     - API documentation
+   - Version Control:
+     - Git for source control
+     - Feature branching workflow
+     - .gitignore for sensitive files
+
+4. **AI/ML Development Lifecycle**
+
+   - Data Processing:
+     - Data cleaning and validation
+     - Feature engineering
+     - Training dataset creation
+   - Model Development:
+     - XGBoost classifier implementation
+     - Hyperparameter tuning
+     - Cross-validation
+   - Model Evaluation:
+     - Accuracy metrics
+     - Classification reports
+     - Confusion matrix analysis
+   - Model Deployment:
+     - Model serialization
+     - Inference pipeline
+     - Performance monitoring
+
+5. **Security Implementation**
+
+   - Authentication:
+     - Session-based authentication
+     - Role-based access control
+   - Data Protection:
+     - Environment variables for sensitive data
+     - Secure password handling
+     - Input validation
+   - HIPAA Compliance:
+     - Patient data protection
+     - Audit logging
+     - Access control
+
+6. **Development Environment**
+   - Backend:
+     - Python virtual environment
+     - Flask development server
+     - MySQL database
+   - Frontend:
+     - Node.js environment
+     - React development server
+   - Tools:
+     - Visual Studio Code
+     - Git for version control
+     - pytest for testing
+
+## System Operation
+
+### Backend Server
+
+1. **Initialization Process**
+
+   - Server starts at `backend/app.py`
+   - Environment variables are loaded from `.env`
+   - Flask application is configured with:
+     - Secret key from environment
+     - Development/Production mode settings
+     - CORS configuration for frontend (localhost:3000)
+     - Secure cookie settings
+   - Database connection pool is initialized (20 connections)
+   - System components are initialized:
+     - Prescription system
+     - Database manager
+     - Cart and purchase managers
+   - Data synchronization thread starts
+
+2. **Server Configuration**
+
+   - Host: 127.0.0.1
+   - Port: 5001
+   - Debug mode: Enabled in development
+   - Session lifetime: 24 hours
+   - Cookie settings:
+     - Secure: True
+     - HTTPOnly: True
+     - SameSite: None
+     - Path: /
+     - Auto-refresh: Enabled
+
+3. **Database Connection**
+
+   - Connection pool size: 20
+   - Connection timeout: 30 seconds
+   - Auto-commit: Enabled
+   - Character encoding: UTF-8
+   - Connection testing: Every 30 seconds
+   - User data caching: 5 minutes TTL
+
+4. **Request Processing**
+   - Pre-request checks:
+     - System initialization verification
+     - Database connection testing
+     - Request logging
+   - Authentication middleware
+   - CORS preflight handling
+   - Session management
+   - Error handling and logging
+
+### Frontend Application
+
+1. **Development Server**
+
+   - Started via `npm start` in frontend directory
+   - React development server runs on port 3000
+   - Hot reloading enabled
+   - Environment variables loaded from `.env`
+
+2. **Production Build**
+
+   - Created via `npm run build`
+   - Output directory: `frontend/build`
+   - Static file optimization
+   - Environment-specific configuration
+
+3. **API Integration**
+
+   - Base URL: http://127.0.0.1:5001
+   - Request caching:
+     - GET requests cached for 5 minutes
+     - Cache clearing on user logout
+   - Credentials included in all requests
+   - Error handling and logging
+   - Request timeout: 10 seconds
+
+4. **Component Initialization**
+   - React application mounts at `index.js`
+   - Root component: `App.js`
+   - Routing configuration
+   - Global state management
+   - API client initialization
+
+### Data Synchronization
+
+1. **Background Process**
+
+   - Runs in separate thread
+   - Started during system initialization
+   - Processes updates from queue
+   - Handles data consistency
+   - Manages subscriber notifications
+
+2. **Update Queue**
+   - Thread-safe queue implementation
+   - Timeout: 1 second
+   - Error handling and logging
+   - Automatic recovery
+
+### System Shutdown
+
+1. **Graceful Termination**
+   - Database connections closed
+   - Background threads stopped
+   - Active sessions preserved
+   - Cache cleared
+   - Logs finalized

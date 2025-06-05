@@ -110,8 +110,6 @@ Login Page 37
 Home Page 37
 Admin Page 38
 
-
-
 List of Figures
 Figure 1: Agile methodology 7
 
@@ -133,8 +131,6 @@ UAT- User Acceptance Testing
 SSD- Solid State Drive.
 IDE- Integrated Development Environment.
 
-
-
 Definition of Terms
 Machine Learning - a subset of AI where systems learn patterns from data and improve performance over time without being explicitly programmed.
 Artificial Intelligence - creating machines or systems that can perform tasks that typically require human intelligence
@@ -144,7 +140,7 @@ CHAPTER 1
 In today`s world healthcare faces a lot of challenges. Doctors and pharmacist often find it hard to figure out what is wrong with someone once they get sick because there are too many diseases and many of them have similar symptoms which is hard for the doctors to keep track. Usually, doctors depend on tests, information that is given to them by the patient, historical records of the patient and any family disease so as to make decision on the kind of prescription to administer, but mistakes can happen especially if the doctor is overwhelmed with too much work or they do not have full information of the patient. These mix-ups can lead to the wrong diagnosis therefore offering the wrong treatment to the patient and instead of the patient to feel better they end getting worse. These leads to the loss of trust between patients and doctors since they cannot fully trust them to offer the proper treatment.
 Artificial Intelligence (AI) has emerged as a powerful tool with the potential to revolutionize various aspects of healthcare, including drug discovery, diagnostics, and treatment planning. Its ability to analyze vast amounts of data, identify patterns, and provide intelligent insights makes it a promising technology for enhancing the accuracy, efficiency, and safety of medicine prescription.  
 The client that I am developing the proposed system is Uzuri Chem Pharmacy, it is located in Thika. It serves an average of 150 patients in a day. They offer good medical services to patients and since they are very busy daily the doctors get to be overwhelmed with pressure of the job and sometimes, they are not able to get full access to patients records thus getting wrong diagnosis and therefore not being able to treat the patient.
-This project, aims to develop a Medicine Prescription System, that will fix these problems by creating a system that helps patients and doctors at Uzuri Chem Pharmacy. The system lets people type in their symptoms, predicts what illness they might have, and suggests the right medicines, precautions, and diet tips. By using AI and a simple website, it cuts down on guesswork, speeds up care, and reduces the need for patients to treat themselves or wait too long for help. It’s all about making healthcare at Uzuri Chem Pharmacy easier, faster, and safer for everyone.
+This project, aims to develop a Medicine Prescription System, that will fix these problems by creating a system that helps patients and doctors at Uzuri Chem Pharmacy. The system lets people type in their symptoms, predicts what illness they might have, and suggests the right medicines, precautions, and diet tips. By using AI and a simple website, it cuts down on guesswork, speeds up care, and reduces the need for patients to treat themselves or wait too long for help. It's all about making healthcare at Uzuri Chem Pharmacy easier, faster, and safer for everyone.
 1.1 Project Overview
 The world keeps growing in the area of mobile and smart technologies has reshaped industries like healthcare, thus providing better ways to tackle challenges such as diagnosing diseases and finding the right treatments. This project, the Medicine Recommendation System, builds a smart system to help patients and doctors at Uzuri Chem Pharmacy in Thika. It uses two key ideas Artificial Intelligence to guess illnesses from symptoms and data analysis to give personalized advice as the main tools (research areas) to make healthcare more accurate. By combining these into an easy-to-use system with a Flask-based web platform, it aims to accurately treat patients according to the disease thus avoiding wrong diagnosis
 1.1.1 Global Perspective
@@ -159,7 +155,7 @@ The healthcare industry has traditionally used a one-size-fits-all approach to m
 In the Case of Uzuri Chem Pharmacy which is located in Thika handles over 150 patients daily. The patients are located along Thika road and some even come from Muranga to receive treatment. This is exhausting for doctors to handle all these patients in a day and to retrieve medical records is sometimes slow which can delay how fast a patient receives treatment. Sometimes doctors can mix up medical records which can cause a confusion which will lead misdiagnosis and giving the wrong treatment to patients which can harm them or even cause death in some cause. Over time patients have lost trust in doctors due to wrong medication and therefore causing some to self-medicate.
 1.3 Proposed Solution
 This project has an aim to develop an AI Medicine Prescription System, which has the potential to revolutionize how patients are diagnosed and offered treatment. By using machine learning and a web-based platform the solution aims to enhance how patients receive treatment quickly without delay, the right treatment preventing misdiagnosis, and the right medication to avoid advance effects of giving the wrong medication.
-Optimized medicine selection is a critical process that aims to ensure the best possible treatment outcome for individual patients. It involves a comprehensive evaluation of numerous factors, including the patient’s medical conditions, symptoms, medical history, genetic factors, demographic information, potential drug interactions, and possible side effects.20 Doctors analyze all these data and then can make decisions to minimize the risks associated with medication and maximize therapeutic benefits. This individualized approach acknowledges that patients have different responses to the medications due to factors such as genetic variations, pre-existing conditions, and polypharmacy.21 Doctors are part of this process because they are medication expertise and prevent medication errors by ensuring the right drug, frequency, dose, and dosage form.22 So how can Artificial intelligence aid doctors in optimizing medicine? AI-based systems can provide doctors with advanced decision-support tools. These tools analyze vast amounts of patient data from various sources, including electronic health records (EHR), genomic sequencing, medical reports, and lifestyle information.23-25 The more comprehensive and diverse the data, the better AI can understand individual patients’ unique characteristics and medication needs. Doctors can take advantage of AI models to generate predictions and recommendations made specifically for individual patients. These models know historical patients’ data, treatment outcomes, and medical knowledge to outlook the disease progression, treatment response, and potential adverse effects.26-27
+Optimized medicine selection is a critical process that aims to ensure the best possible treatment outcome for individual patients. It involves a comprehensive evaluation of numerous factors, including the patient's medical conditions, symptoms, medical history, genetic factors, demographic information, potential drug interactions, and possible side effects.20 Doctors analyze all these data and then can make decisions to minimize the risks associated with medication and maximize therapeutic benefits. This individualized approach acknowledges that patients have different responses to the medications due to factors such as genetic variations, pre-existing conditions, and polypharmacy.21 Doctors are part of this process because they are medication expertise and prevent medication errors by ensuring the right drug, frequency, dose, and dosage form.22 So how can Artificial intelligence aid doctors in optimizing medicine? AI-based systems can provide doctors with advanced decision-support tools. These tools analyze vast amounts of patient data from various sources, including electronic health records (EHR), genomic sequencing, medical reports, and lifestyle information.23-25 The more comprehensive and diverse the data, the better AI can understand individual patients' unique characteristics and medication needs. Doctors can take advantage of AI models to generate predictions and recommendations made specifically for individual patients. These models know historical patients' data, treatment outcomes, and medical knowledge to outlook the disease progression, treatment response, and potential adverse effects.26-27
 1.3.1 Key Features of Proposed System
 
 The AI Medicine Prescription System will include the following key operations:
@@ -167,7 +163,7 @@ The AI Medicine Prescription System will include the following key operations:
 1. Symptom Input and Collection: The system will allow doctors at Uzuri Chem Pharmacy to enter symptoms through a simple Flask-based web interface.
 2. Disease Prediction with Machine Learning: Using a trained machine learning model, the system will analyze the entered symptoms and predict possible diseases.
 3. Personalized Recommendation Generation: After predicting a disease, the system will create a detailed report.
-4. Real-Time Data Checking and Updates: The system will use data analysis to check its predictions and recommendations in real-time, making sure they’re safe and correct.
+4. Real-Time Data Checking and Updates: The system will use data analysis to check its predictions and recommendations in real-time, making sure they're safe and correct.
 5. Secure Access and Health Data Protection: To keep patient information safe, the system will use encryption techniques, protecting symptoms, reports, and personal details from unauthorized access.
    1.4 Objectives
    1.4.1 General Objective
@@ -208,7 +204,7 @@ To thoroughly evaluate the AI Medicine Prescription System's effectiveness, this
    o Develop the system using appropriate technologies like Flask for the web framework, machine learning libraries (e.g., scikit-learn, TensorFlow).
 8. Testing and Validation:
    o Conduct unit testing, integration testing, and system testing to ensure the accuracy of medication suggestions, and user interface.
-   o Perform user acceptance testing (UAT) to validate the system’s usability and performance with real-world data.
+   o Perform user acceptance testing (UAT) to validate the system's usability and performance with real-world data.
 9. Deployment and Maintenance:
    o Deploy the system in a real-world healthcare environment for testing with both medical professionals and patients.
    o Continuously collect feedback to improve system features, model accuracy, and data handling. Regular updates and maintenance will be performed to ensure ongoing optimization.
@@ -221,7 +217,7 @@ The Agile methodology is chosen for this project because of its adaptability and
 The scope of this research and system development project will focus on the development of an AI assisted Medicine Prescription System, specifically targeting healthcare settings in Kenya. The system will provide disease predictions, and medication recommendations based on symptoms and historical health data. The system will serve both patients and healthcare professionals, aiming to improve diagnosis accuracy and reduce misdiagnosis of often complex diseases that have common symptoms with other diseases in health care settings.
 1.8.1 Limitations of the Study:
 
-1. Data Availability: Limited access to medical data for training the recommendation model that could affect the accuracy of disease predictions and consistently the system’s performance.
+1. Data Availability: Limited access to medical data for training the recommendation model that could affect the accuracy of disease predictions and consistently the system's performance.
 2. Technological Constraints: The study is constrained to using Flask for web application development, machine learning algorithms for prediction, and MySQL for backend data storage.
 3. Geographical Focus: The research will focus on healthcare within Kenya, and findings may not be directly applicable to regions with different healthcare infrastructures or practices.
 4. Time and Resource Constraints: Due to a constrained timeline of six months, only a functional prototype of the recommendation system will be developed, and large-scale testing or full implementation may be limited.
@@ -249,48 +245,67 @@ Implementing robust measures to safeguard patient data against unauthorized acce
 • Validation
 Rigorously checking all input data for correctness and adherence to predefined formats before it is processed or stored within the system.
 Machine Learning-Based Prediction
-The integration of machine learning empowers our system to generate automated, data-driven predictions based on presented patient symptoms. By training algorithms on extensive datasets, the system can discern complex patterns and suggest the most probable diagnoses. Key aspects of this component include:
+The integration of machine learning empowers our system to generate automated, data-driven predictions based on presented patient symptoms. The system uses XGBoost, a gradient boosting framework, which offers several advantages:
+• Efficient Training: XGBoost's optimized implementation allows for fast model training and prediction.
+• Feature Importance: Built-in feature importance analysis helps understand which symptoms are most predictive.
+• Handling Imbalanced Data: Effective handling of imbalanced disease classes through weighted sampling.
+• Model Interpretability: Provides insights into prediction decisions through feature importance and probability scores.
+
+Key aspects of this component include:
 • Training
-The process of feeding the machine learning model with meticulously labeled data, linking specific symptoms to their corresponding diagnosed diseases, enabling the model to learn these associations.
-• Inference
-The application of the trained model to analyze new sets of patient symptoms and generate predictions regarding potential medical conditions.
-• Model Accuracy
-A critical metric ensuring the model's reliability, characterized by a low incidence of both false positive (incorrectly predicting a disease) and false negative (failing to predict an existing disease) results.
-• Explainability
-Providing a degree of transparency into the reasoning behind the model's predictions, enhancing user trust and facilitating clinical oversight.
-Personalized Recommendation Systems
-A core feature of our system is the ability to deliver tailored recommendations for medication, and precautionary measures, specifically adapted to each individual patient's needs. This personalization is crucial for optimizing treatment outcomes and patient well-being. Key characteristics include:
-• Adaptiveness
-The system's capacity to learn from patient feedback, treatment outcomes, and evolving medical knowledge to continuously refine and improve its suggestions over time.
-• User Profiling
-The incorporation of comprehensive patient information, such as medical history, age, and existing comorbidities, to ensure the accuracy and relevance of personalized recommendations.
-Flask Web Interface and Usability
-A seamless and responsive web interface is indispensable for ensuring user adoption and effective utilization of the system. The Flask microframework facilitates rapid development and robust integration with the machine learning backend. Essential elements of this aspect include:
-• UI/UX Design
-The creation of an intuitive user interface that simplifies symptom input and presents results in a clear, concise, and easily understandable manner.
-• API Integration
-Ensuring smooth and reliable communication between the frontend user interface, the backend machine learning model, and the underlying database.
-• Security Features
-Implementing robust security measures, including secure user authentication, encrypted data transmission, and effective session management, to protect sensitive information.
-2.2.2 Theoretical Frameworks
-This section delves into the theoretical frameworks underpinning the critical aspect of data integrity within the proposed system.
-Data Integrity Frameworks
-• Transactional Data Integrity
-This framework focuses on ensuring the accuracy of data inputs (e.g., symptoms, user credentials) and outputs (e.g., predictions, prescriptions) throughout all system operations. Techniques such as ACID (Atomicity, Consistency, Isolation, Durability) compliant databases, rigorous input validation procedures, and rollback mechanisms are employed to maintain data consistency, particularly in scenarios involving concurrent user access.
-o Strength: Offers a high degree of data reliability and consistency during transactions.
-o Limitation: May experience performance bottlenecks when dealing with very large datasets or high-frequency real-time queries.
-• End-to-End Integrity
-This comprehensive approach aims to guarantee data correctness throughout its entire lifecycle, from initial input to final prediction and output. It encompasses measures such as data storage encryption, checksum validation to detect data corruption, and the use of secure Application Programming Interfaces (APIs) for data transfer.
-o Strength: Provides robust protection for data throughout its entire journey within the system.
-o Limitation: Can introduce increased complexity during the system development and implementation phases.
-2.3 Case Study Review
-This section provides an analysis of relevant case studies focusing on the implementation and impact of machine learning, medical prescriptions systems, and broader digital healthcare technologies. These real-world examples offer valuable insights into the successes, challenges, and lessons learned from similar initiatives, both globally and within local contexts. The review of these case studies will inform the development of our Personalized Medical Recommendation System by highlighting effective strategies, potential pitfalls to avoid, and promising avenues for innovation.
-2.3.1 Case Study 1: Kenyatta National Hospital
-Kenyatta National Hospital introduced an AI-driven prescription verification system. This implementation has resulted in a notable decrease in prescription errors and improved patient safety. The system cross-references patient data with prescribed medications, flagging potential drug interactions and allergies (Kumar & Shah, 2020).
-2.3.2 Case Study 2: Mater Hospital
-Mater Hospital in Nairobi implemented an AI-based inventory management system. This system has helped predict drug requirements more accurately, reducing instances of stockouts and overstocking. The AI system has significantly improved operational efficiency and reduced costs associated with emergency orders and wastage due to expired drugs (Patel & Agrawal, 2021).
-2.3.3 Case Study 3: Pharm Access Foundation
-The Pharm-Access Foundation has been working with various community pharmacies in Kenya to implement AI-based tools for better data management and security. These tools help in maintaining accurate patient records, secure storage of sensitive information, and efficient retrieval of patient history (Angraal et al., 2020).
+The process of feeding the machine learning model with meticulously labeled data, linking specific symptoms to their corresponding diagnosed diseases. The model uses:
+
+- Binary symptom features
+- Multi-class disease prediction
+- Early stopping (10 rounds)
+- Evaluation metric: mlogloss
+- Hyperparameter tuning through grid search
+  • Inference
+  The application of the trained model to analyze new sets of patient symptoms and generate predictions regarding potential medical conditions, with confidence scores for each prediction.
+  • Model Accuracy
+  A critical metric ensuring the model's reliability, characterized by:
+- Cross-validation scores
+- Classification metrics (precision, recall, F1-score)
+- Confusion matrix analysis
+- Symptom detection performance
+  • Explainability
+  Providing transparency into the model's predictions through:
+- Feature importance visualization
+- Confidence scores for predictions
+- Symptom-disease relationship mapping
+  Personalized Recommendation Systems
+  A core feature of our system is the ability to deliver tailored recommendations for medication, and precautionary measures, specifically adapted to each individual patient's needs. This personalization is crucial for optimizing treatment outcomes and patient well-being. Key characteristics include:
+  • Adaptiveness
+  The system's capacity to learn from patient feedback, treatment outcomes, and evolving medical knowledge to continuously refine and improve its suggestions over time.
+  • User Profiling
+  The incorporation of comprehensive patient information, such as medical history, age, and existing comorbidities, to ensure the accuracy and relevance of personalized recommendations.
+  Flask Web Interface and Usability
+  A seamless and responsive web interface is indispensable for ensuring user adoption and effective utilization of the system. The Flask microframework facilitates rapid development and robust integration with the machine learning backend. Essential elements of this aspect include:
+  • UI/UX Design
+  The creation of an intuitive user interface that simplifies symptom input and presents results in a clear, concise, and easily understandable manner.
+  • API Integration
+  Ensuring smooth and reliable communication between the frontend user interface, the backend machine learning model, and the underlying database.
+  • Security Features
+  Implementing robust security measures, including secure user authentication, encrypted data transmission, and effective session management, to protect sensitive information.
+  2.2.2 Theoretical Frameworks
+  This section delves into the theoretical frameworks underpinning the critical aspect of data integrity within the proposed system.
+  Data Integrity Frameworks
+  • Transactional Data Integrity
+  This framework focuses on ensuring the accuracy of data inputs (e.g., symptoms, user credentials) and outputs (e.g., predictions, prescriptions) throughout all system operations. Techniques such as ACID (Atomicity, Consistency, Isolation, Durability) compliant databases, rigorous input validation procedures, and rollback mechanisms are employed to maintain data consistency, particularly in scenarios involving concurrent user access.
+  o Strength: Offers a high degree of data reliability and consistency during transactions.
+  o Limitation: May experience performance bottlenecks when dealing with very large datasets or high-frequency real-time queries.
+  • End-to-End Integrity
+  This comprehensive approach aims to guarantee data correctness throughout its entire lifecycle, from initial input to final prediction and output. It encompasses measures such as data storage encryption, checksum validation to detect data corruption, and the use of secure Application Programming Interfaces (APIs) for data transfer.
+  o Strength: Provides robust protection for data throughout its entire journey within the system.
+  o Limitation: Can introduce increased complexity during the system development and implementation phases.
+  2.3 Case Study Review
+  This section provides an analysis of relevant case studies focusing on the implementation and impact of machine learning, medical prescriptions systems, and broader digital healthcare technologies. These real-world examples offer valuable insights into the successes, challenges, and lessons learned from similar initiatives, both globally and within local contexts. The review of these case studies will inform the development of our Personalized Medical Recommendation System by highlighting effective strategies, potential pitfalls to avoid, and promising avenues for innovation.
+  2.3.1 Case Study 1: Kenyatta National Hospital
+  Kenyatta National Hospital introduced an AI-driven prescription verification system. This implementation has resulted in a notable decrease in prescription errors and improved patient safety. The system cross-references patient data with prescribed medications, flagging potential drug interactions and allergies (Kumar & Shah, 2020).
+  2.3.2 Case Study 2: Mater Hospital
+  Mater Hospital in Nairobi implemented an AI-based inventory management system. This system has helped predict drug requirements more accurately, reducing instances of stockouts and overstocking. The AI system has significantly improved operational efficiency and reduced costs associated with emergency orders and wastage due to expired drugs (Patel & Agrawal, 2021).
+  2.3.3 Case Study 3: Pharm Access Foundation
+  The Pharm-Access Foundation has been working with various community pharmacies in Kenya to implement AI-based tools for better data management and security. These tools help in maintaining accurate patient records, secure storage of sensitive information, and efficient retrieval of patient history (Angraal et al., 2020).
 
 2.4 Application of AI in Medicine Prescription
 
@@ -371,8 +386,10 @@ Integrating new digital tools with existing hospital infrastructure and workflow
    • Frontend:
    o React.js
    • Machine Learning:
-   o TensorFlow and PyTorch (Python): Powerful deep learning frameworks that can be used for more complex AI models if needed in the future. Might be overkill for initial symptom-disease prediction.
-   o MLflow: An open-source platform for managing the machine learning lifecycle, including experiment tracking, model packaging, and deployment. Useful for organizing and deploying AI models.
+   o XGBoost: A powerful gradient boosting framework used for the disease prediction model, providing efficient and accurate classification capabilities.
+   o scikit-learn: Used for data preprocessing, model evaluation, and utility functions like train-test splitting and cross-validation.
+   o spaCy: Natural Language Processing library used for symptom extraction and text processing.
+   o MLflow: An open-source platform for managing the machine learning lifecycle, including experiment tracking, model packaging, and deployment.
    • Database:
    o MySQL: A widely used, open-source relational database management system (RDBMS). Suitable for storing structured data like patient records, prescriptions, and drug information.
    • API Development: Flask itself is excellent for building RESTful APIs for communication between microservices or the frontend and backend.
@@ -476,10 +493,10 @@ SUBTOTAL 61,500
 
 CHAPTER 3: SYSTEM DESIGN &ANALYSIS
 3.1 Introduction
-This chapter focuses on the analysis and design phases of the AI-Assisted Medicine Prescription System for Uzuri Chem Pharmacy. It covers the system development methodology, feasibility studies, requirements elicitation, data analysis, system specification, requirement analysis and modeling, logical design and the system’s physical design. In the system development methodology, the system development techniques are discussed, they are introduced before the actual implementation of the system begins. The feasibility study is conducted to assess the viability of the proposed system. The political, economic, social, technical, environmental, and legal feasibility are widely discussed. Requirement elicitation focuses on where and how the data was collected in addition to the sampling of the data collected and the techniques applied. The data collected will then be analyzed to format it, this is largely discussed in data analysis. Under the system specification, both functional and nonfunctional requirements are well presented in order to identify at what rate that the system offer what it offers. The requirements are analyzed and modeled to find out the conflicts and redundancies and to resolve them. Use Case diagrams to capture system interactions with users, Low-Level DFDs to illustrate data flow through system processes and class diagrams to define object relationships and attributes were modeled. In the logical design of the system, the system architecture (3 tier; user interface, business logic and database), control flow and process design (flowcharts, activity diagrams and sequence diagrams) and design for non-functional requirements (security strategies, error and exception handling) are captured. The physical design sector focuses on the design of the physical structure of the database, the user interface and the business logic. It involves making decisions about the hardware and software platforms, database, networking, deployment environments and other physical aspects of the system.
+This chapter focuses on the analysis and design phases of the AI-Assisted Medicine Prescription System for Uzuri Chem Pharmacy. It covers the system development methodology, feasibility studies, requirements elicitation, data analysis, system specification, requirement analysis and modeling, logical design and the system's physical design. In the system development methodology, the system development techniques are discussed, they are introduced before the actual implementation of the system begins. The feasibility study is conducted to assess the viability of the proposed system. The political, economic, social, technical, environmental, and legal feasibility are widely discussed. Requirement elicitation focuses on where and how the data was collected in addition to the sampling of the data collected and the techniques applied. The data collected will then be analyzed to format it, this is largely discussed in data analysis. Under the system specification, both functional and nonfunctional requirements are well presented in order to identify at what rate that the system offer what it offers. The requirements are analyzed and modeled to find out the conflicts and redundancies and to resolve them. Use Case diagrams to capture system interactions with users, Low-Level DFDs to illustrate data flow through system processes and class diagrams to define object relationships and attributes were modeled. In the logical design of the system, the system architecture (3 tier; user interface, business logic and database), control flow and process design (flowcharts, activity diagrams and sequence diagrams) and design for non-functional requirements (security strategies, error and exception handling) are captured. The physical design sector focuses on the design of the physical structure of the database, the user interface and the business logic. It involves making decisions about the hardware and software platforms, database, networking, deployment environments and other physical aspects of the system.
 3.2 Systems Development Methodology
 Agile is an ideal methodology for developing an AI- Assisted Medicine Prescription system due to its structured and iterative approach, which ensures continuous improvement. The process starts with understanding the business and data, followed by data preparation, crucial for handling sensitive pharmacy data. It enables experimenting with various AI models to forecast demand, recommend personalized medications, and detect fraud, all while maintaining security. The methodology's evaluation phase helps refine predictions and ensure the system meets real-world needs. Finally, agile flexibility and scalability also allow the system to evolve as data grows and new security challenges arise.
-Agile has an iterative and incremental development that promotes; short development cycles to deliver working components, frequent reassessment and adaptation, which is crucial as new medical data or algorithms become available, the ability to incrementally introduce AI features which could become a bottleneck if introduced at once due to its complexity. With agile, one can create a system that meets the needs of the diverse users such as doctors, pharmacists and patients since it enhances close collaboration with stakeholders and continuous engagement of users to ensure the system remains usable, safe and compliant with the medical protocols. AI models are often probabilistic and may evolve over time, agile not only accommodates the changing requirements and unexpected outcomes for the AI model behavior of the system proposed but also allows developers to test and validate assumptions early, reducing the risk of building a system that doesn’t align with the medical realities. Agile encourages learning from the past iterations, which is essential for fine tuning AI algorithms that the system will use. Furthermore, the teams can respond to new findings in medical research or emerging regulations without derailing the project. It also allows early deployment of minimum viable AI features like symptom checkers, which can evolve into full prescription support system. This promotes rapid delivery and feedback while ensuring a quicker time-to-value which in turn helps to build trust with end users.
+Agile has an iterative and incremental development that promotes; short development cycles to deliver working components, frequent reassessment and adaptation, which is crucial as new medical data or algorithms become available, the ability to incrementally introduce AI features which could become a bottleneck if introduced at once due to its complexity. With agile, one can create a system that meets the needs of the diverse users such as doctors, pharmacists and patients since it enhances close collaboration with stakeholders and continuous engagement of users to ensure the system remains usable, safe and compliant with the medical protocols. AI models are often probabilistic and may evolve over time, agile not only accommodates the changing requirements and unexpected outcomes for the AI model behavior of the system proposed but also allows developers to test and validate assumptions early, reducing the risk of building a system that doesn't align with the medical realities. Agile encourages learning from the past iterations, which is essential for fine tuning AI algorithms that the system will use. Furthermore, the teams can respond to new findings in medical research or emerging regulations without derailing the project. It also allows early deployment of minimum viable AI features like symptom checkers, which can evolve into full prescription support system. This promotes rapid delivery and feedback while ensuring a quicker time-to-value which in turn helps to build trust with end users.
 In conclusion, Agile is ideal for an AI-Assisted Medicine Prescription system because it aligns with the dynamic, high-stakes, and user-sensitive nature of healthcare technology. It ensures flexibility, quality, and ongoing alignment with user needs and medical standards, making it a practical choice for managing both software and AI development challenges.
 3.3 Feasibility Study
 To assess the feasibility of implementing the AI Assisted Medicine Prescription System, PESTEL was examined:
@@ -521,7 +538,7 @@ The population is divided into n groups of size k and in each group, one is pick
 
 The data collected addressed the core research objectives and user needs. It formed the basis for defining system requirements, ensuring alignment with user expectations and system goals.
 3.5 Data Analysis
-Data collected from the pharmacy’s existing manual records was analyzed using statistical tools like Microsoft Excel. The analysis revealed trends such as frequent medication shortages, delays in retrieving patient prescription history, and inaccuracies in monthly financial reconciliations. These findings informed the design of the AI system, specifically the need for predictive disease diagnosis and intelligent data retrieval functionalities.
+Data collected from the pharmacy's existing manual records was analyzed using statistical tools like Microsoft Excel. The analysis revealed trends such as frequent medication shortages, delays in retrieving patient prescription history, and inaccuracies in monthly financial reconciliations. These findings informed the design of the AI system, specifically the need for predictive disease diagnosis and intelligent data retrieval functionalities.
 The data collected from various tools was systematically analyzed using Microsoft Excel. To facilitate clear interpretation and insight extraction, results were visualized through different graphical formats:
 • Pie Charts were used to represent user preferences, providing a quick overview of distribution and proportions across different options.
 
